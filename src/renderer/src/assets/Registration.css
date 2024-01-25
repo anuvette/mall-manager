@@ -1,0 +1,77 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: Tahoma, Verdana, sans-serif;
+}
+
+.App {
+  text-align: center;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(
+    90deg,
+    rgba(15, 13, 48, 1) 0%,
+    rgba(66, 66, 144, 1) 41%,
+    rgba(160, 149, 249, 0.7811857164740896) 100%
+  );
+}
+
+.auth-form-container,
+.login-form,
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (min-width: 600px) {
+  .auth-form-container {
+    padding: 5rem;
+    border: 1px solid white;
+    border-radius: 10px;
+    margin: 0.5rem;
+  }
+}
+
+label {
+  text-align: left;
+  padding: 0.25rem 0;
+}
+
+input {
+  margin: 0.5rem 0;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  color: hsl(262, 69%, 54%);
+}
+
+input:focus {
+  outline: 2px solid #a084d2;
+}
+
+input[type='file']:focus {
+  outline: none;
+}
+button {
+  border: none;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #7439db;
+}
+
+button:active {
+  transition: transform 0.3s ease;
+  transform: scale(0.98);
+}
+
+.link-btn {
+  background: none;
+  color: white;
+  text-decoration: underline;
+}

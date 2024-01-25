@@ -1,0 +1,201 @@
+.individual-lease-container {
+  display: grid;
+  min-width: 100%;
+  width:100%;
+  height:100%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 0.25fr 1fr 1fr 1fr;
+  gap: 20px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "individual-lease-container__button--scanner individual-lease-container__button--scanner"
+    "individual-lease-container__pp-photo individual-lease-container__info"
+    "individual-lease-container__pp-photo individual-lease-container__info"
+    "individual-lease-container__citizenship-photo individual-lease-container__pancard-photo";
+  /* border: 1px solid white; */
+  border-radius:10px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.individual-lease-container__button--scanner {
+  grid-area: individual-lease-container__button--scanner;
+  width:10%;
+}
+
+.individual-lease-container__pp-photo {
+  grid-area: individual-lease-container__pp-photo;
+  border: 1px solid white;
+  border-radius: 10px;
+}
+
+.individual-lease-container__info {
+  grid-area: individual-lease-container__info;
+  border: 1px solid white;
+  border-radius: 10px;
+  overflow: scroll;
+}
+
+.individual-lease-container__citizenship-photo {
+  grid-area: individual-lease-container__citizenship-photo;
+  border: 1px solid white;
+  border-radius: 10px;
+}
+
+
+
+.individual-lease-container__pancard-photo {
+  grid-area: individual-lease-container__pancard-photo;
+  border: 1px solid white;
+  border-radius: 10px;
+}
+
+
+.individual-lease-container--formatting {
+  padding:30px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap:20px;
+  position:relative;
+}
+
+.individual-lease-container--formatting>ul {
+  display: flex;
+  flex-direction: column;
+  gap:15px;
+} 
+
+.individual-lease-container--image {
+    background-color: rgba(0, 0, 0, 0.5);
+  overflow:hidden;
+  position: relative;
+}
+
+
+.individual-lease-container--image img {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:10px;
+  transition: opacity 0.3s ease-in-out;
+  z-index:1;
+}
+
+.individual-lease-container__header
+{
+  padding:20px;
+  position:absolute;
+  z-index:3;
+  color:white;
+  opacity:0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.individual-lease-container__modal
+{
+  top:0;
+  left:0;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  padding:20px;
+  border:none;
+  border-radius:10px;
+  color:#7439db;
+  width:25rem;
+  height:40rem;
+}
+
+.individual-lease-container__modal>div
+{
+  display:flex;
+  flex-direction:column;
+}
+
+
+.individual-lease-container__modal input
+{
+  border: 1px solid #7439db;
+  color:#7439db;
+}
+
+.individual-lease-container__modal button
+{
+  border:1px solid #7439db;
+  border-radius:0;
+}
+
+.individual-lease-container__modal:focus
+{
+  outline:none;
+  border:none;
+}
+
+
+.individual-lease-container__modal::-webkit-scrollbar-thumb {
+  background-color:#9d72e7;
+}
+
+
+.individual-lease-container__button--add {
+  background-color: transparent;
+  position: absolute;
+  color: white;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  font-size: 4rem;
+  transition: opacity 0.3s ease-in-out;
+  z-index:2;
+}
+
+.individual-lease-container__button--delete {
+  background-color: transparent;
+  position: absolute;
+  color: red;
+  top: 5px;
+  right: 10px;
+  opacity: 0;
+  font-size: larger;
+  transition: opacity 0.3s ease-in-out;
+  z-index:2;
+}
+
+.individual-lease-container--image:hover img {
+  opacity: 0.5;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.individual-lease-container--image:hover .individual-lease-container__header ,.individual-lease-container--image:hover .individual-lease-container__button--add, .individual-lease-container--image:hover .individual-lease-container__button--delete {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.individual-lease-container--formatting:hover .individual-lease-container__button--add, .individual-lease-container--formatting:hover .individual-lease-container__button--delete {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+
+
+.individual-lease-container__button--add:active {
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease-in-out;
+}
+
+.individual-lease-container__button--delete:active {
+  width: auto;
+  height: auto;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.individual-lease-container--image::-webkit-scrollbar {
+  display:none;
+}

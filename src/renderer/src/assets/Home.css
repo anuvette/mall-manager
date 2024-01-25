@@ -1,0 +1,134 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Main Dashboard Styles */
+.Home {
+  text-align: center;
+  display: flex;
+  color: white;
+  max-height: 100vh;
+  min-height: 100vh;
+  background: linear-gradient(
+    90deg,
+    rgba(15, 13, 48, 1) 0%,
+    rgba(66, 66, 144, 1) 41%,
+    rgba(160, 149, 249, 0.7811857164740896) 100%
+  );
+}
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+  width: 230px;
+  border: 1px solid white;
+  border-radius: 10px;
+  margin: 20px;
+  padding: 10px;
+  position: relative;
+  justify-content: space-between;
+  overflow: scroll;
+}
+
+.content {
+  display: flex;
+  width: 100%;
+  min-width: 100px;
+  border: 1px solid white;
+  border-radius: 10px;
+  margin: 20px;
+  padding: 20px;
+  overflow-y: scroll;
+  justify-content: center;
+}
+
+.last-visited {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.last-visited button {
+  border: 1px solid white;
+  color: white;
+  background-color: transparent;
+  border-radius: 0;
+  align-self: flex-start;
+}
+
+.last-visited button:disabled {
+  border: 1px solid rgb(255, 255, 255, 50%);
+  color: rgb(255, 255, 255, 50%);
+  cursor: not-allowed;
+}
+
+.last-visited button:disabled:active {
+  transform: scale(1);
+}
+
+/* For WebKit-based browsers */
+.content::-webkit-scrollbar {
+  width: 5px; /* Width of the scrollbar */
+}
+
+/* Track (the rail behind the thumb) */
+.content::-webkit-scrollbar-track {
+  background: transparent; /* Color of the track (rail) */
+}
+
+/* Handle (the thumb) */
+.content::-webkit-scrollbar-thumb {
+  background: white; /* Color of the scrollbar thumb */
+  border-radius: 10px;
+}
+
+/* Hide scrollbar buttons (arrows) */
+.content::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Change scrollbar color (the actual scrollbar) */
+.content {
+  scrollbar-color: white; /* Color of the actual scrollbar */
+}
+
+.accordion-main {
+  /* border:2px solid white;  */ /* THIS WAS JUST FOR DEBUGGING*/
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /*this will create gap between headers admin,account etc*/
+}
+
+.accordion-component {
+  width: 100%;
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.accordion-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.7s ease;
+}
+
+.accordion-component.open {
+  border-radius: 10px;
+}
+
+.accordion-content.open {
+  max-height: 500px;
+}
+
+.logout button {
+  width: 100%;
+}

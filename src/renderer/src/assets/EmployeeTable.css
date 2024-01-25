@@ -1,0 +1,120 @@
+.EmployeeTable {
+  width: 100%;
+  height: 95%;
+  /* border: 2px solid orange; */
+  overflow: scroll;
+}
+
+.EmployeeTable__button {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* border: 2px solid white; */
+}
+
+.EmployeeTable__button button {
+  box-sizing: border-box;
+
+  color: white;
+  background-color: transparent;
+  font-size: 50px;
+  padding: 0px;
+  margin: 0;
+}
+
+.EmployeeTable__table {
+  height: 50px;
+  position: relative;
+
+  /* border: 1px solid orange; */
+}
+
+.EmployeeTable__table input {
+  background-color: transparent;
+  color: white;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  /* outline: 2px solid white; */
+}
+
+.EmployeeTable__table input::-webkit-calendar-picker-indicator {
+  background-color: transparent;
+  filter: invert(1);
+}
+
+.newRow input {
+  background-color: transparent;
+  color: white;
+  border-radius: 0px;
+  border: 1px solid white;
+}
+
+.EmployeeTable__table input:focus {
+  border: 2px solid orange;
+  outline: 0;
+  border-radius: 0;
+}
+
+.EmployeeTable__tableHeader {
+}
+
+.EmployeeTable__tableRow {
+  padding: 0;
+  margin: 0;
+  /* border: 1px solid red; */
+}
+
+.EmployeeTable__tableRow td:focus {
+  border: 0;
+  outline: 0;
+  border: 2px solid orange;
+
+  /* border: 1px solid red; */
+}
+.EmployeeTable__tableRow td {
+}
+
+.EmployeeTable__tableRow td label {
+  cursor: pointer;
+}
+
+.EmployeeTable__tableRow td p {
+  /* border: 1px solid white; */
+  text-align: center;
+}
+
+.EmployeeTable__tableRow td input[type='checkbox'] {
+  display: none;
+}
+
+.EmployeeTable__tableHeaderCell {
+}
+
+.EmployeeTable__tableBody {
+}
+
+.EmployeeTable__tableCell {
+  padding: 1px;
+  /* border: 1px solid white; */
+}
+
+.EmployeeTable__tableFooter {
+  position: sticky;
+  bottom: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.EmployeeTable__tableFooter--Row {
+  position: relative;
+}
+
+.EmployeeTable__tableFooter--Row td:nth-child(4) {
+  align-self: center;
+  /* border: 1px solid white; */
+}

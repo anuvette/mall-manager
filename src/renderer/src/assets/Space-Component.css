@@ -1,0 +1,96 @@
+
+.Open-Space-Button
+{
+    width:100%;
+    height:253px;
+    display:flex;
+    flex-direction: column;
+    border:1px solid white;
+    border-radius:10px;
+    background:transparent;
+    align-items: center;
+    justify-content:center;
+    outline:none;
+    padding:0;
+    overflow: hidden;
+
+}
+
+
+
+.Space-Image
+{
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+
+
+
+
+
+
+.Space-Component-Modal
+{
+    border:0;
+    border-radius:10px;
+    padding:20px;
+    background-color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height:400px;
+    
+}
+
+.Space-Component-Modal::backdrop
+{
+    background-color: black;
+    transition: 0.3s ease;
+    opacity:0.3;
+}
+
+.Space-Component-Modal-Image-Container
+{
+    width:100%;
+    aspect-ratio: 16/9;
+    border:1px solid #7439db;
+    margin-bottom:10px;
+
+}
+
+.Space-Component-Modal img
+{
+    object-fit: cover;
+    height: 100%;
+    width:100%;
+}
+
+.Space-Component-Modal-Detail-Container
+{
+    display: flex;
+    flex-direction: column;
+    width:100%;
+    color:#7439db;
+    text-transform: uppercase;
+    justify-content: flex-start;
+    align-items:flex-start;
+    gap:7px;
+    font-size: larger;
+}
+
+.Space-Component-Modal-Detail-Container button
+{
+    border:1px solid #7439db;
+    border-radius:0;
+    width:100%;
+}
+
+.Space-Component-Modal-Detail-Container button:active
+{
+      background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(193,168,237,0.671942018995098) 42%, rgba(160,128,215,1) 100%); 
+
+}

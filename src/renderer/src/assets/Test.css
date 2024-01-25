@@ -1,0 +1,76 @@
+.pettyCashAccount {
+  width: 100%;
+  overflow: scroll;
+}
+
+.pettyCashAccount__button {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* border: 2px solid white; */
+}
+
+.pettyCashAccount__button button {
+  box-sizing: border-box;
+
+  color: white;
+  background-color: transparent;
+  font-size: 50px;
+  padding: 0px;
+  margin: 0;
+}
+
+.pettyCashAccount__title {
+}
+
+.pettyCashAccount__table {
+  height: 50px;
+}
+
+.pettyCashAccount__table input {
+  background-color: transparent;
+  color: white;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  /* outline: 2px solid white; */
+}
+
+.pettyCashAccount__table input::-webkit-calendar-picker-indicator {
+  background-color: transparent;
+  filter: invert(1);
+}
+
+.newRow input {
+  background-color: transparent;
+  color: white;
+  border-radius: 0px;
+  border: 1px solid white;
+}
+
+.pettyCashAccount__table input:focus {
+  border-radius: 0;
+  outline: 2px solid orange;
+}
+
+.pettyCashAccount__tableHeader {
+}
+
+.pettyCashAccount__tableRow {
+  padding: 0;
+  margin: 0;
+}
+
+.pettyCashAccount__tableHeaderCell {
+}
+
+.pettyCashAccount__tableBody {
+}
+
+.pettyCashAccount__tableCell {
+  padding: 1px;
+}

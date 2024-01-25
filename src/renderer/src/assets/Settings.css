@@ -1,0 +1,60 @@
+.settings-header{
+    /* border:2px solid orange; */
+    width: 100%;
+}
+
+.settings-container
+{
+    /* border:2px solid orange; */
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.settings-info
+{
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+    box-sizing: border-box;
+    border-bottom:1px solid white;
+    padding-bottom:5px;
+    height: 100%;
+}
+
+.settings-body input
+{
+    border:2px solid white;
+    background-color: transparent;
+    color:white;
+    
+}
+
+.settings-body button
+{
+    border:1px solid white;
+    background:transparent;
+    color:white;
+    border-radius:0;
+    transition: 0.3s ease;
+    cursor: pointer;
+
+}
+
+.settings-body button:active
+{
+    background-color: white;
+    color: #7439db;
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+.settings-button-container
+{
+    display: flex;
+    gap:10px;
+    justify-content: center;
+
+}
