@@ -32,6 +32,17 @@ const electronAPI = {
     }
   },
 
+  getUserDetail: async (token, usernameInSession, userId) => {
+    try {
+      const result = await ipcRenderer.invoke('get-user-detail', token, usernameInSession, userId)
+      // console.log('Result from get-user-details', result)
+      return result
+    } catch (error) {
+      console.error('Error getting user details:', error)
+      throw error
+    }
+  },
+
   addUserDetails: async (token, usernameInSession, userId, userData) => {
     try {
       const result = await ipcRenderer.invoke(
@@ -53,6 +64,23 @@ const electronAPI = {
     try {
       const result = await ipcRenderer.invoke(
         'update-user-details',
+        token,
+        usernameInSession,
+        userId,
+        userData
+      )
+      console.log('Result from update-user-details', result)
+      return result
+    } catch (error) {
+      console.error('Error updating user details:', error)
+      throw error
+    }
+  },
+
+  updateUserDetail: async (token, usernameInSession, userId, userData) => {
+    try {
+      const result = await ipcRenderer.invoke(
+        'update-user-detail',
         token,
         usernameInSession,
         userId,

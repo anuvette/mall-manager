@@ -435,6 +435,22 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-user-detail', async (event, token, usernameInSession, userId) => {
+    // console.log('userid', userId)
+    try {
+      const decoded = jwt.verify(token, secretKey)
+      if (decoded.username === usernameInSession) {
+        const result = await dbQueries.getUserDetailQuery(userId)
+        return result
+      } else {
+        throw new Error('Token mismatch')
+      }
+    } catch (error) {
+      console.error('Error getting User Detail:', error)
+      throw error
+    }
+  })
+
   ipcMain.handle('add-user-details', async (event, token, usernameInSession, userId, userData) => {
     // console.log('Token before verification:', token, usernameInSession, userData)
     try {
@@ -459,6 +475,22 @@ app.whenReady().then(() => {
         const decoded = jwt.verify(token, secretKey)
         if (decoded.username === usernameInSession) {
           const result = await dbQueries.updateUserDetailsQuery(userId, userData)
+          return result
+        }
+      } catch (error) {
+        console.error('Error updating user details:', error)
+        throw error
+      }
+    }
+  )
+  ipcMain.handle(
+    'update-user-detail',
+    async (event, token, usernameInSession, userId, userData) => {
+      // console.log('Token before verification:', token, usernameInSession, userData)
+      try {
+        const decoded = jwt.verify(token, secretKey)
+        if (decoded.username === usernameInSession) {
+          const result = await dbQueries.updateUserDetailQuery(userId, userData)
           return result
         }
       } catch (error) {

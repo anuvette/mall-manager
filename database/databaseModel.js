@@ -1214,6 +1214,24 @@ function getUserDetailsQuery(userId) {
   })
 }
 
+function getUserDetailQuery(userId) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT firstName, lastName, username, contact FROM user_details WHERE userid = ?`,
+      [userId],
+      (err, row) => {
+        if (err) {
+          console.log('error')
+          reject(err)
+        } else {
+          console.log(row)
+          resolve(row)
+        }
+      }
+    )
+  })
+}
+
 function getSalaryIncentivesDetailsQuery(userId) {
   return new Promise((resolve, reject) => {
     // First, check if the logged-in user has admin or superuser privileges
@@ -1580,6 +1598,50 @@ function updateUserDetailsQuery(loggedInUserId, userDataArray) {
         }
       }
     )
+  })
+}
+
+async function updateUserDetailQuery(userId, userData) {
+  // console.log('userdata', userData)
+  return new Promise(async (resolve, reject) => {
+    let query = 'UPDATE user_details SET '
+    let params = []
+
+    if (userData.username !== null && userData.username !== '') {
+      query += 'username = ?, '
+      params.push(userData.username)
+    }
+
+    if (userData.password !== null && userData.password !== '') {
+      try {
+        const hash = await bcrypt.hash(userData.password, 10)
+        query += 'password = ?, '
+        params.push(hash)
+      } catch (err) {
+        reject(err)
+        return
+      }
+    }
+
+    // If neither username nor password is provided, reject the promise
+    if (params.length === 0) {
+      reject('No fields provided for update')
+      return
+    }
+
+    // Remove trailing comma and space
+    query = query.slice(0, -2)
+
+    query += ' WHERE userid = ?'
+    params.push(userId)
+
+    db.run(query, params, function (err) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve('User details updated successfully')
+      }
+    })
   })
 }
 
@@ -2148,8 +2210,10 @@ module.exports = {
   updateAdvanceDetailsQuery,
   deleteAdvanceDetailsQuery,
   getUserDetailsQuery,
+  getUserDetailQuery,
   addUserDetailsQuery,
   updateUserDetailsQuery,
+  updateUserDetailQuery,
   deleteUserDetailsQuery,
   getSalaryIncentivesDetailsQuery,
   updateSalaryIncentivesDetailsQuery,
