@@ -19,6 +19,7 @@ let mainWindow
 let mainToken = null
 let pdfViewerWindow = null
 function pdfProcessor(leaseDetails) {
+  console.log('leasedeails', leaseDetails)
   const diffInMonths =
     (new Date(leaseDetails.dateOfExpiry).getFullYear() -
       new Date(leaseDetails.dateOfEffect).getFullYear()) *
@@ -100,8 +101,83 @@ function pdfProcessor(leaseDetails) {
       ' Rent is due on the first day of each month and shall be considered late if not received by the 5th of the month.'
     )
     .moveDown()
-
-  // Add other data fields as needed
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text('Security Deposit: ', { continued: true })
+    .font('Helvetica')
+    .text('Tenant shall pay Landlord a security deposit of Rs. 50,000/-, ', { continued: true })
+    .text('which', { continued: true })
+    .font('Helvetica')
+    .text(' shall be refundable at the end of the tenancy, less any damages or unpaid rent.')
+    .moveDown()
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text('Utilities: ', { continued: true })
+    .font('Helvetica')
+    .text('Tenant shall be responsible for paying for all utilities and services related to the', {
+      continued: true
+    })
+    .font('Helvetica')
+    .text(' Property, including electricity, gas, water, trash, and internet/cable.')
+    .moveDown()
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text('Repair and Maintenance: ', { continued: true })
+    .font('Helvetica')
+    .text('Landlord shall be responsible for maintaining and repairing the', { continued: true })
+    .text(
+      " Property, except for damages caused by Tenant or Tenant's guests. Tenant shall notify Landlord",
+      { continued: true }
+    )
+    .text(' in writing of any needed repairs or maintenance.')
+    .moveDown()
+  //untested
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text('Use of Property: ', { continued: true })
+    .font('Helvetica')
+    .text(
+      "Tenant shall use the Property only as an office space and shall not use it for any illegal purposes. Tenant shall not sublet the Property or allow any other person to live there without Landlord's written consent."
+    )
+    .moveDown()
+    .font('Helvetica-Bold')
+    .text('Rules and Regulations: ', { continued: true })
+    .font('Helvetica')
+    .text(
+      'Tenant shall comply with all rules and regulations set forth in this Agreement and any additional rules or regulations that Landlord may reasonably impose.'
+    )
+    .moveDown()
+    .font('Helvetica-Bold')
+    .text('Termination: ', { continued: true })
+    .font('Helvetica')
+    .text(
+      "This Agreement may be terminated by either party upon 30 days' written notice if the other party breaches any material term or condition of this Agreement."
+    )
+    .moveDown()
+    .font('Helvetica-Bold')
+    .text('Governing Law: ', { continued: true })
+    .font('Helvetica')
+    .text('This Agreement shall be governed by the laws of Nepal.')
+    .moveDown()
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text(
+      'IN WITNESS WHEREOF, the parties have executed this Agreement on the date and year first above written.'
+    )
+    .moveDown()
+    .moveDown()
+    .moveDown()
+  doc
+    .font('Helvetica')
+    .text('LANDLORD', { continued: true })
+    .text(' '.repeat(100), { continued: true }) // 50 spaces for justification
+    .text('TENANT')
+    .moveDown()
 
   // Finalize the PDF document
   doc.end()
