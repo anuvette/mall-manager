@@ -305,13 +305,13 @@ const Building = () => {
         Math.floor(scrollPercentage / (100 / numberOfElements)),
         numberOfElements - 1
       )
-      console.log(newIndex)
+      // console.log(newIndex)
       setActiveSlideIndex(newIndex)
     }
   }
 
   const getChildState = (childState) => {
-    console.log('Child State:', childState)
+    // console.log('Child State:', childState)
     setBuildingData(childState)
   }
 
@@ -451,7 +451,7 @@ const Building = () => {
                   }}
                 >
                   {isEditing ? '✔' : '✎'}
-                  {/* this is edit button */}
+                  {/*this is edit button */}
                 </button>
                 <button
                   style={{

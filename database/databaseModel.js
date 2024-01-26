@@ -281,7 +281,7 @@ function createBuildingDetailsTables() {
   db.run(
     `CREATE TABLE IF NOT EXISTS building_image_details (
     buildingImageId INTEGER PRIMARY KEY AUTOINCREMENT,
-    imageIndex TEXT UNIQUE,
+    imageIndex TEXT,
     imagePath TEXT DEFAULT 'default.png'
   )`,
     (err) => {

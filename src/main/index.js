@@ -316,7 +316,7 @@ function createWindow() {
   }
 }
 
-app.disableHardwareAcceleration()
+// app.disableHardwareAcceleration()
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -830,18 +830,18 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('add-building-image-details', async (event, buildingImageData) => {
-    // console.log('line 566 from index', buildingImageData)
+    console.log('line 566 from index', buildingImageData)
     try {
       if (buildingImageData.imagePath && buildingImageData.imagePath !== null) {
         const response = await axios.post('http://localhost:3000/uploadImage', {
           photoPath: buildingImageData.imagePath
         })
 
-        // console.log(response.data)
+        console.log(response.data)
         // Modify buildingImageData.photoPath to just the filename
         const fileName = response.data.fileName
         buildingImageData.imagePath = fileName
-        // console.log('line 567 from index', buildingImageData.imagePath)
+        console.log('line 567 from index', buildingImageData.imagePath)
       }
 
       try {
