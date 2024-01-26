@@ -26,54 +26,41 @@ const EmployeeTable = ({
   const addModeSaveButtonRef = React.useRef()
 
   const handleEditInputChange = (rowData, originalRowData) => {
+    console.log('typeId', typeId)
     console.log('row data', rowData)
     setEditedRow((prevRows) => {
-      // Find the index of the row in updatedRows that matches the current rowData
       const existingRowIndex = prevRows.updatedRows.findIndex(
         (row) => row[typeId] === rowData[typeId]
       )
 
       let updatedRows
       if (existingRowIndex !== -1) {
-        // If the row already exists in updatedRows, we want to merge the new rowData with it
-        // First, make a copy of updatedRows
         updatedRows = [...prevRows.updatedRows]
 
-        // Then, for the row that matches rowData, overwrite its properties with the properties of rowData
-        // But only if the new value is not null
         updatedRows[existingRowIndex] = Object.entries(rowData).reduce(
           (acc, [key, value]) => {
-            // If the new value is not null, overwrite the existing value
             if (value !== null) {
               acc[key] = value
             }
-            // If the new value is null, keep the existing value
             return acc
           },
-          { ...updatedRows[existingRowIndex] } // Start with a copy of the existing row data
+          { ...updatedRows[existingRowIndex] }
         )
       } else {
-        // If the row doesn't exist in updatedRows, we want to add it
-        // We start with a copy of originalRowData and overwrite its properties with the properties of rowData
-        // But only if the new value is not null
         const newRow = Object.entries(rowData).reduce(
           (acc, [key, value]) => {
-            // If the new value is not null, overwrite the existing value
             if (value !== null) {
               acc[key] = value
             }
-            // If the new value is null, keep the existing value
             return acc
           },
-          { ...originalRowData } // Start with a copy of originalRowData
+          { ...originalRowData }
         )
 
-        // Add the new row to updatedRows
         updatedRows = [...prevRows.updatedRows, newRow]
       }
 
       console.log('Updated rows:', updatedRows)
-      // Return the new state, which includes both updatedRows and originalRowData
       return { updatedRows }
     })
   }

@@ -117,7 +117,7 @@ const CustomTannyTable = ({
         setEditingMode(false)
         setAddingMode(false)
         setActiveRows([])
-        setEditedRow([])
+        setEditedRow({ updatedRows: [] })
         console.log('revertEditedRow', revertEditedRow)
         revertEditedRow.forEach((row) => {
           if (typeof row.ref === 'function') {

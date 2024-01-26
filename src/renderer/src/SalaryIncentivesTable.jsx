@@ -69,7 +69,7 @@ const SalaryIncentivesTable = ({ typeId, data, columns, updateFunction }) => {
       if (e.key === 'Escape') {
         setEditingMode(false)
         setActiveRows([])
-        setEditedRow([])
+        setEditedRow({ updatedRows: [] })
         // console.log('revertEditedRow', revertEditedRow)
         revertEditedRow.forEach((row) => {
           if (typeof row.ref === 'function') {
