@@ -18,6 +18,7 @@ $ npm install
 
 ```bash
 $ npm run dev
+($ electron-vite dev --watch)
 ```
 
 ### Build
