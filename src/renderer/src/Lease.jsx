@@ -578,13 +578,41 @@ function Lease() {
 
         <button
           onClick={() => {
+            const docsModal = document.getElementById('view-docs')
             if (selectedRow && selectedRow.leaseId) {
               navigate(`/Home/docs?leaseId=${selectedRow.leaseId}`)
+            } else {
+              docsModal.showModal()
             }
           }}
         >
           View Docs
         </button>
+        <dialog
+          id="view-docs"
+          className="view-docs-modal"
+          onClick={(event) => {
+            const docsModal = document.getElementById('view-docs')
+            if (event.target === docsModal) {
+              docsModal.close()
+            }
+          }}
+        >
+          <p>Nothing is selected</p>
+          <button
+            style={{
+              border: '1px solid #7439db',
+              borderRadius: 0,
+              color: '#7439db'
+            }}
+            type="button"
+            onClick={() => {
+              document.getElementById('view-docs').close()
+            }}
+          >
+            Close
+          </button>
+        </dialog>
 
         <button onClick={() => handleLeaseGeneratorButton()}>Lease Generator</button>
         <dialog

@@ -1,4 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import os from 'os'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -212,12 +213,15 @@ function createWindow() {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/preload.js'),
-      nodeIntegration: true,
+      // preload: join(__dirname, '../preload/preload.js'),
+      preload: path.join(app.getAppPath(), 'src', 'preload', 'preload.js'),
+      nodeIntegration: false, //this is false because we are using preload script
       sandbox: false,
       nativeWindowOpen: true //**** add this**
     }
   })
+
+  console.log(path.join(app.getAppPath(), 'src', 'preload', 'preload.js'))
 
   mainWindow.maximize()
   mainWindow.setMenu(null)
@@ -285,7 +289,7 @@ function createWindow() {
 
         // Overwrite the resources folder
         try {
-          fsExtra.copySync(resourcesFilePaths[0], path.join(__dirname, '../../resources'))
+          fsExtra.copySync(resourcesFilePaths[0], path.join(os.homedir(), 'myPhotos'))
           console.log('Resources copied successfully')
         } catch (error) {
           console.error(`Failed to copy resources: ${error}`)
@@ -309,9 +313,12 @@ function createWindow() {
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools({ mode: 'bottom' })
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    // mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    // mainWindow.loadFile(path.resolve(__dirname, 'renderer', 'index.html'))
+    mainWindow.loadFile(path.join(app.getAppPath(), 'out', 'renderer', 'index.html'))
+
     mainWindow.webContents.openDevTools()
   }
 }
@@ -331,18 +338,22 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+  const photosDir = path.join(app.getPath('userData'), 'photos')
+
+  if (!fs.existsSync(photosDir)) {
+    fs.mkdirSync(photosDir)
+  }
 
   expressImageServer.use(express.json())
-  expressImageServer.use('/image', express.static(path.join(__dirname, '../../resources')))
-
+  expressImageServer.use('/image', express.static(photosDir))
   expressImageServer.use('/image/*', (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, '../../resources/default.png')) //if image not exist then send back default.png
+    res.sendFile(path.join(app.getAppPath(), 'resources', 'default.png')) //if image not exist then send back default.png
   })
 
   expressImageServer.post('/uploadImage', async (req, res) => {
     const photoPath = req.body.photoPath
 
-    console.log('photoPath from /uploadImage express server', photoPath)
+    // console.log('photoPath from /uploadImage express server', photoPath)
 
     if (!photoPath) {
       return res.status(400).send('No photo path provided.')
@@ -350,31 +361,37 @@ app.whenReady().then(() => {
 
     let fileName = path.basename(photoPath)
     const extension = path.extname(fileName)
-    const date = new Date().toISOString().replace(/:/g, '').replace(/-/g, '_').toUpperCase()
+    const date = new Date().toISOString().replace(/:/g, '').replace(/-/g, '_').toUpperCase() //
     const regex = /(\d{4})_(\d{2})_(\d{2})T(\d{2})(\d{2})(\d{2})/
     const formattedDate = date.replace(regex, 'IMG_$2_$3_$1_$4$5$6')
     fileName = `${formattedDate}${extension}`
-    const destinationPath = path.join(__dirname, '../../resources', fileName)
+    const destinationPath = path.join(photosDir, fileName)
+    console.log('Destination Path', destinationPath)
 
     // Use fs.copyFile to copy the file to the desired location
     fs.copyFile(photoPath, destinationPath, (err) => {
       if (err) {
-        return res.status(500).send(err)
+        // return res.status(500).send(err)
+        return res.status(500).send({ message: 'Upload failed' })
       }
-
-      console.log({ message: 'Image uploaded!', fileName: fileName })
+      // console.log({ message: 'Image uploaded!', fileName: fileName })
       res.send({ message: 'Image uploaded!', fileName: fileName })
     })
   })
 
   expressImageServer.delete('/deleteImage/:imageName', (req, res) => {
-    const imageName = req.params.imageName
-    const imagePath = path.join(__dirname, '../../resources', imageName)
+    let imageName = path.basename(req.params.imageName) // sanitize the imageName
+    const imagePath = path.join(photosDir, imageName)
 
     fs.unlink(imagePath, (err) => {
       if (err) {
-        console.error('Error deleting image:', err)
-        res.status(500).send({ message: 'Error deleting image' })
+        if (err.code === 'ENOENT') {
+          console.log('File does not exist, but that is okay')
+          res.status(200).send({ message: 'Image deleted successfully' })
+        } else {
+          console.error('Error deleting image:', err)
+          res.status(500).send({ message: 'Error deleting image' })
+        }
       } else {
         console.log('Image deleted successfully')
         res.status(200).send({ message: 'Image deleted successfully' })
@@ -553,8 +570,9 @@ app.whenReady().then(() => {
         console.error('Error adding new space:', error)
         // Delete the image if the query fails
         if (spaceData.photoPath) {
-          const imagePath = path.join(__dirname, '../../resources', spaceData.photoPath)
-          await fs.unlink(imagePath)
+          const imagePath = path.join(photosDir, spaceData.photoPath)
+
+          await fsPromise.unlink(imagePath)
         }
         throw error
       }
@@ -648,7 +666,7 @@ app.whenReady().then(() => {
         console.error('Error adding passport photo:', error)
         // Delete the image if the query fails
         if (passportPhoto.photoPath) {
-          const imagePath = path.join(__dirname, '../../resources', passportPhoto.photoPath)
+          const imagePath = path.join(photosDir, passportPhoto.photoPath)
           await fs.unlink(imagePath)
         }
         throw error
@@ -683,7 +701,7 @@ app.whenReady().then(() => {
         console.error('Error adding citizen photo:', error)
         // Delete the image if the query fails
         if (citizenPhoto.photoPath) {
-          const imagePath = path.join(__dirname, '../../resources', citizenPhoto.photoPath)
+          const imagePath = path.join(photosDir, citizenPhoto.photoPath)
           await fs.unlink(imagePath)
         }
         throw error
@@ -718,8 +736,8 @@ app.whenReady().then(() => {
         console.error('Error adding PAN photo:', error)
         // Delete the image if the query fails
         if (PANPhoto.photoPath) {
-          const imagePath = path.join(__dirname, '../../resources', PANPhoto.photoPath)
-          await fs.unlink(imagePath)
+          const imagePath = path.join(photosDir, PANPhoto.photoPath)
+          await fsPromise.unlink(imagePath)
         }
         throw error
       }
@@ -837,7 +855,7 @@ app.whenReady().then(() => {
           photoPath: buildingImageData.imagePath
         })
 
-        console.log(response.data)
+        // console.log(response.data)
         // Modify buildingImageData.photoPath to just the filename
         const fileName = response.data.fileName
         buildingImageData.imagePath = fileName
@@ -848,17 +866,17 @@ app.whenReady().then(() => {
         const result = await dbQueries.addBuildingImageTableDetailsQuery(buildingImageData)
         return result
       } catch (error) {
-        console.error('Error adding building image data:', error)
+        // console.error('Error adding building image data:', error)
+        console.error('Error adding building image data:')
+
         // Delete the image if the query fails
         if (buildingImageData.imagePath) {
-          const deleteImagePath = path.join(
-            __dirname,
-            '../../resources',
-            buildingImageData.imagePath
-          )
+          const deleteImagePath = path.join(photosDir, buildingImageData.imagePath)
+
           fs.unlink(deleteImagePath, (err) => {
             if (err) {
-              console.error('Error deleting image:', err)
+              console.error('Error deleting image:')
+              // console.error('Error deleting image:', err)
             } else {
               console.log('Successfully deleted image')
             }
@@ -910,7 +928,7 @@ app.whenReady().then(() => {
       try {
         const result = await dbQueries.updateBuildingImageTableDetailsQuery(buildingImageData)
         if (result.oldImagePath) {
-          const deleteImagePath = path.join(__dirname, '../../resources', result.oldImagePath)
+          const deleteImagePath = path.join(photosDir, result.oldImagePath)
           fs.unlink(deleteImagePath, (err) => {
             if (err) {
               console.error('Error deleting old image:', err)
@@ -925,11 +943,7 @@ app.whenReady().then(() => {
         // Delete the image if the query fails
 
         if (buildingImageData.imagePath) {
-          const deleteImagePath = path.join(
-            __dirname,
-            '../../resources',
-            buildingImageData.imagePath
-          )
+          const deleteImagePath = path.join(photosDir, result.oldImagePath)
           fs.unlink(deleteImagePath, (err) => {
             if (err) {
               console.error('Error deleting image:', err)
@@ -947,6 +961,10 @@ app.whenReady().then(() => {
   ipcMain.handle('delete-building-image-details', async (event, buildingImageData) => {
     try {
       const result = await dbQueries.deleteBuildingImageTableDetailsQuery(buildingImageData)
+
+      // Call the endpoint when the database operation is successful
+      await axios.delete(`http://localhost:3000/deleteImage/${buildingImageData.imagePath}`)
+
       return result
     } catch (error) {
       console.error('Error deleting building image details:', error)
@@ -1023,11 +1041,7 @@ app.whenReady().then(() => {
             console.error('Error adding tax manager image data:', error)
             // Delete the image if the query fails
             if (taxManagerImageData.imagePath) {
-              const deleteImagePath = path.join(
-                __dirname,
-                '../../resources',
-                taxManagerImageData.imagePath
-              )
+              const deleteImagePath = path.join(photosDir, result.oldImagePath)
               fs.unlink(deleteImagePath, (err) => {
                 if (err) {
                   console.error('Error deleting image:', err)
@@ -1074,7 +1088,7 @@ app.whenReady().then(() => {
               taxManagerImageData
             )
             if (result.oldImagePath) {
-              const deleteImagePath = path.join(__dirname, '../../resources', result.oldImagePath)
+              const deleteImagePath = path.join(photosDir, result.oldImagePath)
               fs.unlink(deleteImagePath, (err) => {
                 if (err) {
                   console.error('Error deleting old image:', err)
@@ -1089,11 +1103,8 @@ app.whenReady().then(() => {
             // Delete the image if the query fails
 
             if (taxManagerImageData.imagePath) {
-              const deleteImagePath = path.join(
-                __dirname,
-                '../../resources',
-                taxManagerImageData.imagePath
-              )
+              const deleteImagePath = path.join(photosDir, taxManagerImageData.imagePath)
+
               fs.unlink(deleteImagePath, (err) => {
                 if (err) {
                   console.error('Error deleting image:', err)
@@ -1652,7 +1663,7 @@ app.whenReady().then(() => {
         await fsPromise.copyFile(dbQueries.dbPath, backupFilePath)
 
         // Copy the resources directory
-        const resourcesPath = path.join(__dirname, '../../resources')
+        const resourcesPath = photosDir
         const resourcesBackupPath = path.join(
           backupFolderPath,
           `mallManager_IMAGES_BACKUP-${timestamp}`

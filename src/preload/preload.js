@@ -430,8 +430,6 @@ const electronAPI = {
   },
 
   getLeaseDetailsUserName: async (token, usernameInSession) => {
-    console.log('usernameInSession from preload', usernameInSession)
-    console.log('token from preload', token)
     try {
       const response = await ipcRenderer.invoke(
         'get-lease-details-username',

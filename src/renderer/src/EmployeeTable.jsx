@@ -1,195 +1,155 @@
-import React from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import './assets/EmployeeTable.css'
-import { useTable, useSortBy } from 'react-table'
+import { useTable, useSortBy, useFilters } from 'react-table'
 
-const EmployeeTable = ({
-  typeId,
-  data,
-  columns,
-  insertFunction,
-  updateFunction,
-  deleteFunction
-}) => {
-  const [activeRows, setActiveRows] = React.useState([])
-  const [addingMode, setAddingMode] = React.useState(false)
-  const [editingMode, setEditingMode] = React.useState(false)
-  const [editedRow, setEditedRow] = React.useState({ updatedRows: [] })
-  const [revertEditedRow, setRevertEditedRow] = React.useState([])
-  const firstNameRef = React.useRef()
-  const lastNameRef = React.useRef()
-  const userNameRef = React.useRef()
-  const contactRef = React.useRef()
-  const emergencyContactRef = React.useRef()
-  const [isAdmin, setIsAdmin] = React.useState(false)
-  const [isSuperUser, setIsSuperUser] = React.useState(false)
-  const editModeSaveButtonRef = React.useRef()
-  const addModeSaveButtonRef = React.useRef()
+function CustomCheckbox({ value, onChange }) {
+  const [isChecked, setIsChecked] = useState(value === 1)
 
-  const handleEditInputChange = (rowData, originalRowData) => {
-    console.log('typeId', typeId)
-    console.log('row data', rowData)
-    setEditedRow((prevRows) => {
-      const existingRowIndex = prevRows.updatedRows.findIndex(
-        (row) => row[typeId] === rowData[typeId]
-      )
-
-      let updatedRows
-      if (existingRowIndex !== -1) {
-        updatedRows = [...prevRows.updatedRows]
-
-        updatedRows[existingRowIndex] = Object.entries(rowData).reduce(
-          (acc, [key, value]) => {
-            if (value !== null) {
-              acc[key] = value
-            }
-            return acc
-          },
-          { ...updatedRows[existingRowIndex] }
-        )
-      } else {
-        const newRow = Object.entries(rowData).reduce(
-          (acc, [key, value]) => {
-            if (value !== null) {
-              acc[key] = value
-            }
-            return acc
-          },
-          { ...originalRowData }
-        )
-
-        updatedRows = [...prevRows.updatedRows, newRow]
-      }
-
-      console.log('Updated rows:', updatedRows)
-      return { updatedRows }
-    })
+  const handleClick = () => {
+    setIsChecked(!isChecked)
+    onChange(!isChecked ? 1 : 0)
   }
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
+  return (
+    <button
+      style={{
+        background: 'transparent',
+        border: '1px solid white',
+        borderRadius: 0,
+        width: '100%',
+        color: isChecked ? '#14b8a6' : 'hsl(0, 100%, 50%)'
+      }}
+      onClick={handleClick}
+    >
+      {isChecked ? 'Yes' : 'No'}
+    </button>
+  )
+}
+
+const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFunction }) => {
+  const [activeRows, setActiveRows] = useState([])
+  const [addingMode, setAddingMode] = useState(false)
+  const [editingMode, setEditingMode] = useState(false)
+  const [filterInput, setFilterInput] = useState('')
+
+  const addModeRefs = {
+    firstName: useRef(),
+    lastName: useRef(),
+    userName: useRef(),
+    contact: useRef(),
+    secondaryContact: useRef()
+  }
+  const [checkBoxStates, setCheckBoxStates] = useState({
+    isAdmin: false,
+    isSuperUser: false
+  })
+
+  const [changes, setChanges] = useState([])
+  const [editCheckBox, setEditCheckBox] = useState({
+    isAdmin: false,
+    isSuperUser: false
+  })
+
+  const editModeSaveButtonRef = useRef()
+  const addModeSaveButtonRef = useRef()
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'ID',
+        accessor: 'userid'
+      },
+      {
+        Header: 'SN',
+        accessor: 'sn',
+        Cell: ({ row }) => {
+          return <div>{row.index + 1}</div>
+        }
+      },
+      {
+        Header: 'First Name',
+        accessor: 'firstName'
+      },
+      {
+        Header: 'Last Name',
+        accessor: 'lastName'
+      },
+      {
+        Header: 'Username',
+        accessor: 'username'
+      },
+      {
+        Header: 'Password',
+        accessor: 'password'
+      },
+      {
+        Header: 'Contact',
+        accessor: 'contact'
+      },
+
+      {
+        Header: 'Contact 2',
+        accessor: 'secondaryContact'
+      },
+      {
+        Header: 'isAdmin',
+        accessor: 'isAdmin'
+      },
+      {
+        Header: 'isSuperUser',
+        accessor: 'isSuperUser'
+      }
+    ],
+    []
+  )
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, setFilter } = useTable(
     {
       columns,
       data: data || [],
       autoResetSortBy: false
     },
+    useFilters,
     useSortBy // Using the useSortBy hook here
   )
-
-  const handleAddClick = () => {
-    setAddingMode((prevAddingMode) => !prevAddingMode)
-    setEditingMode(false) // Reset editing mode when toggling add mode
+  const handleFilterChange = (e) => {
+    const value = e.target.value || undefined
+    setFilter('firstName', value) // Update the name filter. Now our table will filter by the name column
+    setFilterInput(value)
   }
 
   const handleAddSaveClick = () => {
     setAddingMode(false)
     setEditingMode(false)
+    setActiveRows([])
+    setChanges([])
 
     const newData = {
-      firstName: firstNameRef.current.value,
-      lastName: lastNameRef.current.value,
-      username: userNameRef.current.value,
-      contact: contactRef.current.value,
-      emergencyContact: emergencyContactRef.current.value,
-      isAdmin: isAdmin ? 1 : 0,
-      isSuperUser: isSuperUser ? 1 : 0
+      firstName: addModeRefs.firstName.current.value,
+      lastName: addModeRefs.lastName.current.value,
+      username: addModeRefs.userName.current.value,
+      contact: addModeRefs.contact.current.value,
+      secondaryContact: addModeRefs.secondaryContact.current.value,
+      isAdmin: checkBoxStates.isAdmin ? 1 : 0,
+      isSuperUser: checkBoxStates.isSuperUser ? 1 : 0
     }
 
     console.log('New Data', newData)
     console.log('old data', data)
 
-    insertFunction(newData)
+    insertFunction.mutate(newData)
     // Reset refs
-    firstNameRef.current.value = ''
-    lastNameRef.current.value = ''
-    userNameRef.current.value = ''
-    contactRef.current.value = ''
-    emergencyContactRef.current.value = ''
-    setIsAdmin(false)
-    setIsSuperUser(false)
+    addModeRefs.firstName.current.value = ''
+    addModeRefs.lastName.current.value = ''
+    addModeRefs.userName.current.value = ''
+    addModeRefs.contact.current.value = ''
+    addModeRefs.secondaryContact.current.value = ''
+    setCheckBoxStates((prevState) => ({
+      ...prevState,
+      isAdmin: false,
+      isSuperUser: false
+    }))
   }
-
-  const handleEditSaveClick = () => {
-    setAddingMode(false)
-    setEditingMode(false)
-    console.log('edit mode', editedRow)
-
-    // // Merge originalRowData with the changes in updatedRows
-    // const mergedRow = Object.entries(editedRow.updatedRows[0]).reduce(
-    //   (acc, [key, value]) => {
-    //     // Only overwrite if the new value is not null
-    //     if (value !== null) {
-    //       acc[key] = value
-    //     }
-    //     return acc
-    //   },
-    //   { ...editedRow.originalRowData } // start with a copy of originalRowData
-    // )
-
-    // console.log('Merged row:', mergedRow)
-
-    updateFunction(editedRow.updatedRows)
-  }
-
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setEditingMode(false)
-        setAddingMode(false)
-        setActiveRows([])
-        setEditedRow({ updatedRows: [] })
-        // console.log('revertEditedRow', revertEditedRow)
-        revertEditedRow.forEach((row) => {
-          if (typeof row.ref === 'function') {
-            // If it's a function, call it with the original value
-            row.ref(row.original)
-          } else {
-            // Otherwise, set the ref's value to the original value
-            row.ref.current.value = row.original // reset value
-          }
-        })
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [revertEditedRow])
-
-  const handleEscapeKeyDown = (newRef, original) => {
-    setRevertEditedRow((prevRefs) => {
-      const updatedRefs = [...prevRefs, { ref: newRef, original: original }]
-      console.log('Updated refs:', updatedRefs)
-      return updatedRefs
-    })
-  }
-
-  // React.useEffect(() => {   REMOVING THE ABILITY TO DELETE ALL ACCOUNTS AT ONCE BECAUSE HONESTLY THERE IS WAYY TOO MANY EDGECASES AND I CANT TEST THEM ALL BY MYSELF
-  //   const handleKeyDown = (e) => {
-  //     if (e.ctrlKey && e.key === 'a') {
-  //       // If there are no active rows, return early
-  //       if (activeRows.length === 0 || document.activeElement.tagName === 'INPUT') {
-  //         return
-  //       }
-
-  //       const firstRow = activeRows[0]
-  //       e.preventDefault()
-
-  //       if (typeId in firstRow) {
-  //         setActiveRows(rows.filter((row) => typeId in row.original).map((row) => row.original))
-  //       } else {
-  //         return
-  //       }
-  //     }
-  //   }
-
-  //   window.addEventListener('keydown', handleKeyDown)
-
-  //   return () => {
-  //     window.removeEventListener('keydown', handleKeyDown)
-  //   }
-  // }, [rows, activeRows])
 
   React.useEffect(() => {
     if (editingMode) {
@@ -221,62 +181,131 @@ const EmployeeTable = ({
     }
   }, [editingMode, addingMode])
 
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setEditingMode(false)
+        setAddingMode(false)
+        setActiveRows([])
+        setChanges([])
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
     <div className="EmployeeTable">
       <div className="EmployeeTable__button">
-        <button
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              handleAddClick()
-            }
+        <input
+          style={{
+            border: '1px solid white',
+            borderRadius: 0,
+            backgroundColor: 'transparent',
+            color: 'white'
           }}
-          onClick={handleAddClick}
-          style={{ fontSize: addingMode ? '45px' : '50px' }}
+          value={filterInput}
+          onChange={handleFilterChange}
+          placeholder={'Search by First Name'}
+        />
+        <button
+          onClick={() => {
+            setAddingMode((prevAddingMode) => !prevAddingMode)
+
+            setEditingMode(false)
+          }}
+          style={{ fontSize: '50px' }}
         >
-          {addingMode ? '✕' : '+'}
+          +
+        </button>
+        <button
+          onClick={() => {
+            setEditingMode((prevEditingMode) => !prevEditingMode)
+            setAddingMode(false)
+          }}
+          style={{ fontSize: '45px' }}
+        >
+          &#9998; {/* EDIT BUTTON */}
         </button>
         {addingMode && (
-          <button
-            ref={addModeSaveButtonRef}
-            onClick={handleAddSaveClick}
-            style={{ fontSize: '49px' }}
-          >
-            &#x1F5AB;
-            {/* ADD MODE SAVE BUTTON */}
-          </button>
-        )}
-        {editingMode && (
           <>
             <button
-              ref={editModeSaveButtonRef}
-              onClick={handleEditSaveClick}
+              ref={addModeSaveButtonRef}
+              onClick={handleAddSaveClick}
               style={{ fontSize: '49px' }}
             >
               &#x1F5AB;
+              {/* ADD MODE SAVE BUTTON */}
             </button>
-            {/* EDIT MODE SAVE BUTTON */}
             <button
               onClick={() => {
                 let x = activeRows.map((row) => row[typeId])
                 console.log(x)
-                deleteFunction(activeRows.map((row) => row[typeId]))
+                deleteFunction.mutate(activeRows.map((row) => row[typeId]))
+                setAddingMode(false)
+              }}
+              style={{ color: 'red' }}
+            >
+              &#x1F5D1;
+              {/* Delete BUTTON */}
+            </button>
+          </>
+        )}
+        {editingMode && (
+          <>
+            <button
+              onClick={() => {
+                updateFunction.mutate(changes)
+
+                setEditingMode(false)
+              }}
+              style={{ fontSize: '49px' }}
+            >
+              &#x1F5AB; {/* EDIT MODE SAVE BUTTON */}
+            </button>
+            <button
+              onClick={() => {
+                let x = activeRows.map((row) => row[typeId])
+                console.log(x)
+                deleteFunction.mutate(activeRows.map((row) => row[typeId]))
                 setEditingMode(false)
               }}
               style={{ color: 'red' }}
             >
               &#x1F5D1;
-            </button>{' '}
-            {/* Delete BUTTON */}
+              {/* Delete BUTTON */}
+            </button>
           </>
         )}
-        {editingMode || addingMode ? (
+        {(editingMode || addingMode) && (
           <p style={{ alignSelf: 'center', color: 'darkgray' }}>
-            Press Esc to revert back(Twice for Date)
+            Press Esc to revert back. [Ctrl+A Disabled for Security]
           </p>
-        ) : (
-          ''
         )}
+
+        {/* ERROR BLOCK */}
       </div>
+      {insertFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while inserting: {insertFunction.error.message}
+        </div>
+      )}
+      {updateFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while updating: {updateFunction.error.message}
+        </div>
+      )}
+      {deleteFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while deleting: {deleteFunction.error.message}
+        </div>
+      )}
+      {/* ERROR BLOCK END */}
+
       <table {...getTableProps()} className="EmployeeTable__table">
         <thead className="EmployeeTable__tableHeader">
           {headerGroups.map((headerGroup) => (
@@ -302,41 +331,43 @@ const EmployeeTable = ({
               <td className="EmployeeTable__tableCell"></td>
               <td className="EmployeeTable__tableCell"></td>
               <td className="EmployeeTable__tableCell">
-                <input ref={firstNameRef} type="text" />
+                <input ref={addModeRefs.firstName} type="text" />
               </td>
               <td className="EmployeeTable__tableCell">
-                <input ref={lastNameRef} type="text" />
+                <input ref={addModeRefs.lastName} type="text" />
               </td>
               <td className="EmployeeTable__tableCell">
-                <input ref={userNameRef} type="text" required />
+                <input ref={addModeRefs.userName} type="text" required />
               </td>
               <td className="EmployeeTable__tableCell">
                 <input style={{ cursor: 'not-allowed' }} type="text" disabled />
               </td>
               <td className="EmployeeTable__tableCell">
-                <input ref={contactRef} type="number" />
+                <input ref={addModeRefs.contact} type="number" />
               </td>
               <td className="EmployeeTable__tableCell">
-                <input ref={emergencyContactRef} type="number" />
+                <input ref={addModeRefs.secondaryContact} type="number" />
               </td>
               <td style={{ border: '1px solid white' }} className="AdvancesTable__tableCell">
                 <label>
                   <input
                     style={{ border: '1px solid white' }}
                     type="checkbox"
-                    checked={isAdmin}
+                    checked={checkBoxStates.isAdmin}
                     onChange={() => {
-                      const newisAdmin = !isAdmin
-                      setIsAdmin(newisAdmin)
-                      console.log(`Checkbox clicked. New value: ${newisAdmin ? 1 : 0}`)
+                      setCheckBoxStates((prevState) => ({
+                        ...prevState,
+                        isAdmin: !prevState.isAdmin
+                      }))
+                      console.log(`Checkbox clicked. New value: ${checkBoxStates.isAdmin ? 1 : 0}`)
                     }}
                   />
                   <p
                     style={{
-                      color: isAdmin ? '#14b8a6' : 'hsl(0, 100%, 50%)'
+                      color: checkBoxStates.isAdmin ? '#14b8a6' : 'hsl(0, 100%, 50%)'
                     }}
                   >
-                    {isAdmin ? 'Yes' : 'No'}
+                    {checkBoxStates.isAdmin ? 'Yes' : 'No'}
                   </p>
                 </label>
               </td>
@@ -345,19 +376,23 @@ const EmployeeTable = ({
                   <input
                     style={{ border: '1px solid white' }}
                     type="checkbox"
-                    checked={isSuperUser}
+                    checked={checkBoxStates.isSuperUser}
                     onChange={() => {
-                      const newIsSuperUser = !isSuperUser
-                      setIsSuperUser(newIsSuperUser)
-                      console.log(`Checkbox clicked. New value: ${newIsSuperUser ? 1 : 0}`)
+                      setCheckBoxStates((prevState) => ({
+                        ...prevState,
+                        isSuperUser: !prevState.isSuperUser
+                      }))
+                      console.log(
+                        `Checkbox clicked. New value: ${checkBoxStates.isSuperUser ? 1 : 0}`
+                      )
                     }}
                   />
                   <p
                     style={{
-                      color: isSuperUser ? '#14b8a6' : 'hsl(0, 100%, 50%)'
+                      color: checkBoxStates.isSuperUser ? '#14b8a6' : 'hsl(0, 100%, 50%)'
                     }}
                   >
-                    {isSuperUser ? 'Yes' : 'No'}
+                    {checkBoxStates.isSuperUser ? 'Yes' : 'No'}
                   </p>
                 </label>
               </td>
@@ -393,11 +428,75 @@ const EmployeeTable = ({
                     }}
                     {...cell.getCellProps()}
                     className="EmployeeTable__tableCell"
+                    style={{
+                      padding: editingMode ? '0px' : '10px',
+                      maxWidth: '100px',
+                      overflow: 'scroll', // Add this line
+                      cursor: cell.column.id === 'password' ? 'not-allowed' : 'pointer'
+                    }}
                   >
-                    {cell.render('Cell', {
-                      onInputChange: handleEditInputChange,
-                      onEscapeKeyDown: handleEscapeKeyDown
-                    })}
+                    {editingMode && !['userid', 'sn', 'password'].includes(cell.column.id) ? (
+                      ['isAdmin', 'isSuperUser'].includes(cell.column.id) ? (
+                        <CustomCheckbox
+                          value={cell.value}
+                          onChange={(newValue) => {
+                            const newChanges = [...changes]
+                            const changeIndex = newChanges.findIndex(
+                              (change) => change.userid === row.original.userid
+                            )
+                            if (changeIndex !== -1) {
+                              newChanges[changeIndex] = {
+                                ...newChanges[changeIndex],
+                                [cell.column.id]: newValue
+                              }
+                            } else {
+                              newChanges.push({
+                                userid: row.original.userid,
+                                [cell.column.id]: newValue
+                              })
+                            }
+                            setChanges(newChanges)
+                            console.log('Edit Changes fella', newChanges) // Log the changes to the console
+                          }}
+                        />
+                      ) : (
+                        <input
+                          style={{
+                            border: '1px solid white',
+                            borderRadius: 0,
+                            cursor: 'pointer'
+                          }}
+                          className="EmployeeTable__input--EditMode"
+                          type="text"
+                          defaultValue={cell.value}
+                          onChange={(e) => {
+                            const newChanges = [...changes]
+                            const changeIndex = newChanges.findIndex(
+                              (change) => change.userid === row.original.userid
+                            )
+                            if (changeIndex !== -1) {
+                              newChanges[changeIndex] = {
+                                ...newChanges[changeIndex],
+                                [cell.column.id]: e.target.value
+                              }
+                            } else {
+                              newChanges.push({
+                                userid: row.original.userid,
+                                [cell.column.id]: e.target.value
+                              })
+                            }
+                            setChanges(newChanges)
+                            console.log(newChanges) // Log the changes to the console
+                          }}
+                        />
+                      )
+                    ) : ['isAdmin', 'isSuperUser'].includes(cell.column.id) ? (
+                      <span style={{ color: cell.value === 1 ? '#14b8a6' : 'hsl(0, 100%, 50%)' }}>
+                        {cell.value === 1 ? 'Yes' : 'No'}
+                      </span>
+                    ) : (
+                      cell.render('Cell')
+                    )}
                   </td>
                 ))}
               </tr>

@@ -1,0 +1,22 @@
+.Toastify__progress-bar {
+  /* background: radial-gradient(circle, rgba(253, 29, 29, 1) 50%, rgba(252, 176, 69, 1) 100%); */
+  background: #7439db;
+}
+
+.Toastify__toast {
+  background: white;
+  color: hsl(262, 69%, 70%);
+  /* color: hsl(0, 50%, 50%); */
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.Toastify__toast:active {
+  transform: scale(0.96);
+  transition: transform 0.3s;
+}
+
+.Toastify__toast--success .Toastify__toast-icon {
+  filter: brightness(0) saturate(100%) invert(17%) sepia(89%) saturate(3913%) hue-rotate(260deg)
+    brightness(94%) contrast(82%);
+}

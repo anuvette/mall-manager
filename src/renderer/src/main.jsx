@@ -1,7 +1,10 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Routes, Route, HashRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import './assets/ToastOverride.css'
 import { AuthContextProvider } from './components/AuthContext'
 import RequireAuth from './components/RequireAuth'
 import Home from './Home'
@@ -32,12 +35,12 @@ createRoot(root).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
-        <BrowserRouter>
+        <HashRouter>
+          <ToastContainer />
           <Routes>
             <Route path="/" element={<SignIn />} />
             <Route path="/SignIn" element={<SignIn />} />
             <Route path="/SignUp" element={<SignUp />} />
-            {/* <Route path="/Backup" element={<Backup />} /> */}
 
             <Route element={<RequireAuth allowedRole="all" />}>
               <Route path="/Home" element={<Home />}>
@@ -91,7 +94,7 @@ createRoot(root).render(
               </Route>
             </Route>
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </AuthContextProvider>
     </QueryClientProvider>
   </React.StrictMode>

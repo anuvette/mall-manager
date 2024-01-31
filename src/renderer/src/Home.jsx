@@ -1,5 +1,7 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Outlet, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 import './assets/Home.css'
 import useAuth from './customHooks/useAuth'
 
@@ -20,6 +22,13 @@ const Accordion = ({ title, children }) => {
 
 const Home = () => {
   const navigate = useNavigate()
+  const createdToasts = useRef(new Set())
+
+  const leaseQuery = useQuery({
+    queryKey: ['taxLeaseData'],
+    queryFn: () => window.electronAPI.getLeaseDetailsUserName(token, usernameInSession)
+  })
+
   const [isError, setIsError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const {
@@ -43,6 +52,7 @@ const Home = () => {
       setUsernameInSession(null)
       setRoleInSession(null)
       setUserId(null)
+      toast.dismiss()
     } catch (error) {
       // console.log("Hehe error", error);
       setIsError(true)
@@ -55,6 +65,43 @@ const Home = () => {
       localStorage.setItem('lastVisited', location.pathname + location.search)
     }
   }, [location.pathname, location.search, isHomePage])
+
+  useEffect(() => {
+    if (leaseQuery.isSuccess) {
+      leaseQuery.data.details.forEach((lease) => {
+        if (!createdToasts.current.has(lease.leaseId)) {
+          const dateOfExpiry = new Date(lease.dateOfExpiry)
+          const currentDate = new Date()
+          const sixMonthsFromNow = new Date()
+          sixMonthsFromNow.setMonth(currentDate.getMonth() + 6)
+          const threeMonthsFromNow = new Date()
+          threeMonthsFromNow.setMonth(currentDate.getMonth() + 3)
+          const oneMonthFromNow = new Date()
+          oneMonthFromNow.setMonth(currentDate.getMonth() + 1)
+
+          const toastOptions = {
+            // autoClose: 100000,
+            onClick: () => {
+              navigate('/Home/tax')
+              toast.dismiss()
+            }
+          }
+
+          if (dateOfExpiry <= currentDate) {
+            toast(`Lease ${lease.leaseId} has expired!`, toastOptions)
+          } else if (dateOfExpiry <= oneMonthFromNow) {
+            toast(`Lease ${lease.leaseId} is about to expire in less than a month!`, toastOptions)
+          } else if (dateOfExpiry <= threeMonthsFromNow) {
+            toast(`Lease ${lease.leaseId} is about to expire in less than 3 months!`, toastOptions)
+          } else if (dateOfExpiry <= sixMonthsFromNow) {
+            toast(`Lease ${lease.leaseId} is about to expire in less than 6 months!`, toastOptions)
+          }
+
+          createdToasts.current.add(lease.leaseId)
+        }
+      })
+    }
+  }, [leaseQuery.isSuccess])
 
   const lastVisited = localStorage.getItem('lastVisited')
 

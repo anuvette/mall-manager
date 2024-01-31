@@ -1,14 +1,15 @@
 import './assets/Building.css'
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 
-const EditingModeInputFields = ({ currentValue, getChildState }) => {
+const EditingModeInputFields = ({ currentValue = {}, getChildState }) => {
   const [values, setValues] = useState({ ...currentValue })
 
   const handleChange = (event) => {
     setValues({
       ...values,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value || ''
     })
   }
 
@@ -207,7 +208,10 @@ const Building = () => {
     mutationFn: (buildingImageData) =>
       window.electronAPI.addBuildingImageDetails(buildingImageData),
     onSuccess: () => {
-      //console.log("Lease added successfully");
+      toast.success('Image added successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['buildingImageData'])
     }
   })
@@ -216,7 +220,10 @@ const Building = () => {
     mutationFn: (buildingImageData) =>
       window.electronAPI.updateBuildingImageDetails(buildingImageData),
     onSuccess: () => {
-      //console.log("Lease added successfully");
+      toast.success('Image updated successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['buildingImageData'])
     }
   })
@@ -225,7 +232,10 @@ const Building = () => {
     mutationFn: (buildingImageData) =>
       window.electronAPI.deleteBuildingImageDetails(buildingImageData),
     onSuccess: () => {
-      //console.log("Lease added successfully");
+      toast.success('Image deleted successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['buildingImageData'])
     }
   })
@@ -239,7 +249,10 @@ const Building = () => {
   const editBuildingDetailsMutation = useMutation({
     mutationFn: (buildingData) => window.electronAPI.updateBuildingDetails(buildingData),
     onSuccess: () => {
-      // console.log('Lease added successfully')
+      toast.success('Building details updated successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['buildingData'])
     }
   })
@@ -247,7 +260,10 @@ const Building = () => {
   const deleteBuildingDetailsMutation = useMutation({
     mutationFn: () => window.electronAPI.deleteAllBuildingDetails(),
     onSuccess: () => {
-      //console.log('Lease added successfully')
+      toast.success('All building details deleted successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['buildingData'])
     }
   })
@@ -373,7 +389,8 @@ const Building = () => {
                         onClick={() =>
                           deleteImageMutation.mutate({
                             buildingImageId: imageDetail.buildingImageId,
-                            imageIndex: imageDetail.imageIndex
+                            imageIndex: imageDetail.imageIndex,
+                            imagePath: imageDetail.imagePath
                           })
                         }
                       >

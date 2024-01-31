@@ -73,9 +73,8 @@
   border: 0;
   outline: 0;
   border: 2px solid orange;
-
-  /* border: 1px solid red; */
 }
+
 .EmployeeTable__tableRow td {
 }
 
@@ -117,4 +116,9 @@
 .EmployeeTable__tableFooter--Row td:nth-child(4) {
   align-self: center;
   /* border: 1px solid white; */
+}
+
+.EmployeeTable__input--EditMode:focus {
+  border: 2px solid orange !important;
+  outline: 0;
 }

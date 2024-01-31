@@ -1,8 +1,21 @@
 const sqlite3 = require('sqlite3').verbose()
 const path = require('path')
 const bcrypt = require('bcrypt')
+const { is } = require('@electron-toolkit/utils')
+const log = require('electron-log')
+const { app } = require('electron')
+const fs = require('fs')
 
-const dbPath = path.resolve(__dirname, 'mallManager.sqlite')
+if (!fs.existsSync(path.join(app.getPath('userData'), 'database'))) {
+  fs.mkdirSync(path.join(app.getPath('userData'), 'database'))
+}
+
+const dbPath = is.dev
+  ? path.join(app.getAppPath(), 'database', 'mallManager.sqlite')
+  : path.join(app.getPath('userData'), 'database', 'mallManager.sqlite')
+console.log('dbPath', dbPath)
+
+// log.info('dbPath', dbPath)
 
 // Create a new database connection
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -43,10 +56,10 @@ function createUserTable() {
     userid INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    contact TEXT,
     firstName TEXT,
     lastName TEXT,
-    secondaryContact TEXT,
+    contact INTEGER CHECK (typeof(contact) = 'integer'),
+    secondaryContact INTEGER CHECK (typeof(secondaryContact) = 'integer'),
     base_salary TEXT,
     bonus TEXT,
     incentives TEXT,
@@ -1319,7 +1332,7 @@ function addUserDetailsQuery(loggedInUserId, userData) {
               userData.username,
               Math.floor(100000 + Math.random() * 900000),
               userData.contact,
-              userData.emergencyContact, //secondaryContct
+              userData.secondaryContact, //secondaryContct
               userData.isAdmin,
               userData.isSuperUser ? userData.isSuperUser : 0
             ],
@@ -1535,58 +1548,44 @@ function updateUserDetailsQuery(loggedInUserId, userDataArray) {
             console.log('userId', userData.userid)
             console.log('isAdmin', isAdmin, 'isSuperUser', isSuperUser)
 
-            // Fetch the original value of isSuperUser from the database
-            db.get(
-              `SELECT isSuperUser FROM user_details WHERE userid = ?`,
-              [userData.userid],
-              (err, row) => {
+            if (isAdmin && !isSuperUser) {
+              // Admin user: deny isSuperUser changes
+              if (userData.hasOwnProperty('isSuperUser')) {
+                delete userData.isSuperUser
+              }
+            } else if (isSuperUser) {
+              // Superuser: deny self demotion
+              console.log('i am super')
+              if (loggedInUserId === userData.userid && userData.isSuperUser === 0) {
+                delete userData.isSuperUser
+              }
+            } else {
+              // Unauthorized user
+              reject('Insufficient privileges')
+              return
+            }
+
+            // Dynamically construct the SQL query and its parameters
+            const fields = Object.keys(userData).filter((key) => key !== 'userid')
+            if (fields.length === 0) {
+              reject('Error 403: Forbidden Request')
+              return
+            }
+            const query = `UPDATE user_details SET ${fields
+              .map((field) => `${field} = ?`)
+              .join(', ')} WHERE userid = ?`
+            const params = [...fields.map((field) => userData[field]), userData.userid]
+
+            return new Promise((resolve, reject) => {
+              db.run(query, params, function (err) {
                 if (err) {
                   reject(err)
                 } else {
-                  const originalIsSuperUser = row.isSuperUser
-
-                  if (isAdmin && !isSuperUser) {
-                    // Admin user: deny isSuperUser changes
-                    if (userData.hasOwnProperty('isSuperUser')) {
-                      delete userData.isSuperUser
-                    }
-                  } else if (isSuperUser) {
-                    // Superuser: deny self demotion
-                    console.log('i am super')
-                    if (loggedInUserId === userData.userid && userData.isSuperUser === 0) {
-                      delete userData.isSuperUser
-                    }
-                  } else {
-                    // Unauthorized user
-                    console.log('gay')
-                    reject('Insufficient privileges')
-                    return
-                  }
-
-                  const query = `UPDATE user_details SET username = ?, firstName = ?, lastName = ?, isAdmin = ?, isSuperUser = ? WHERE userid = ?`
-                  const params = [
-                    userData.username,
-                    userData.firstName,
-                    userData.lastName,
-                    userData.isAdmin,
-                    // Use userData.isSuperAdmin if defined, otherwise use originalIsSuperUser
-                    userData.isSuperAdmin ? userData.isSuperAdmin : originalIsSuperUser,
-                    userData.userid
-                  ]
-
-                  return new Promise((resolve, reject) => {
-                    db.run(query, params, function (err) {
-                      if (err) {
-                        reject(err)
-                      } else {
-                        totalChanges += this.changes
-                        resolve()
-                      }
-                    })
-                  })
+                  totalChanges += this.changes
+                  resolve()
                 }
-              }
-            )
+              })
+            })
           })
 
           Promise.all(promises)
