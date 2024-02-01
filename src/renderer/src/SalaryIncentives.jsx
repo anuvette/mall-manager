@@ -2,6 +2,7 @@ import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import useAuth from './customHooks/useAuth'
 import SalaryIncentivesTable from './SalaryIncentivesTable'
+import { toast } from 'react-toastify'
 
 const SalaryIncentives = () => {
   const { token, userId, usernameInSession } = useAuth()
@@ -17,14 +18,13 @@ const SalaryIncentives = () => {
     mutationFn: (userData) =>
       window.electronAPI.updateSalaryIncentivesDetails(token, usernameInSession, userId, userData),
     onSuccess: (something) => {
-      console.log('User details updated successfully', something)
+      toast.success('Records Updated Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['getSalaryIncentivesDetailsQuery'])
     }
   })
-
-  //   React.useEffect(() => {
-  //     console.log('getSalaryIncentivesDetails', getSalaryIncentivesDetailsQuery.data)
-  //   }, [getSalaryIncentivesDetailsQuery.data])
 
   return (
     <div
@@ -51,163 +51,14 @@ const SalaryIncentives = () => {
           <SalaryIncentivesTable
             typeId="userid"
             data={getSalaryIncentivesDetailsQuery.data}
-            columns={salaryIncentivesColumns}
-            updateFunction={updateUserDetailsMutation.mutate}
+            insertFunction={updateUserDetailsMutation}
+            updateFunction={updateUserDetailsMutation}
+            deleteFunction={updateUserDetailsMutation}
           />
         )}
       </div>
     </div>
   )
 }
-
-// HOISTING THE COLUMNS AND DATA
-
-const salaryIncentivesColumns = [
-  {
-    Header: 'ID',
-    accessor: 'userid'
-  },
-  {
-    Header: 'SN',
-    accessor: 'sn',
-    Cell: ({ row }) => {
-      return <div>{row.index + 1}</div>
-    }
-  },
-  {
-    Header: 'First Name',
-    accessor: 'firstName'
-  },
-  {
-    Header: 'Last Name',
-    accessor: 'lastName'
-  },
-  {
-    Header: 'Username',
-    accessor: 'username'
-  },
-  {
-    Header: 'Base Salary',
-    accessor: 'base_salary',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newSalary = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'userid' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            base_salary: newSalary
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          // console.log('uhh from use effect', inputValueRef.current.value)
-          // Pass the ref back to the parent via the callback
-          onEscapeKeyDown(inputValueRef, original.base_salary)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="number"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    }
-  },
-
-  {
-    Header: 'Bonus',
-    accessor: 'bonus',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newBonus = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'userid' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            bonus: newBonus
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          // console.log('uhh from use effect', inputValueRef.current.value)
-          // Pass the ref back to the parent via the callback
-          onEscapeKeyDown(inputValueRef, original.bonus)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="number"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    }
-  },
-
-  {
-    Header: 'Incentives',
-    accessor: 'incentives',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newIncentives = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'userid' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            incentives: newIncentives
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          // console.log('uhh from use effect', inputValueRef.current.value)
-          // Pass the ref back to the parent via the callback
-          onEscapeKeyDown(inputValueRef, original.incentives)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="number"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    }
-  }
-]
 
 export default SalaryIncentives

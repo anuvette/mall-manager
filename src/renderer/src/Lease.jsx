@@ -4,6 +4,7 @@ import React from 'react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 
 function Lease() {
   const [selectedRow, setSelectedRow] = useState(null)
@@ -205,11 +206,11 @@ function Lease() {
     }
   }
 
-  const handleLeaseGeneratorConfirm = (rows) => {
+  const handleLeaseGeneratorConfirm = (rows, ownerFullName) => {
     // console.log("before calling of API ");
     if (selectedRow !== null) {
       console.log('Row contents:', selectedRow)
-      window.electronAPI.printDocument(selectedRow)
+      window.electronAPI.printDocument(selectedRow, ownerFullName)
     }
     // console.log("After Calling of API");
   }
@@ -627,10 +628,15 @@ function Lease() {
           <h2>Lease Generator:</h2>
           {selectedRow !== null ? (
             <>
-              <p style={{ color: 'red' }}>
-                Records of {selectedRow.firstName} {selectedRow.lastName} (ID no:
+              <form id="ownerForm">
+                <label htmlFor="ownerFullName">Owner's Full Name:(Firstname Lastname)</label>
+
+                <input type="text" id="ownerFullName" required />
+              </form>
+              <h5 style={{ color: '#7439db', textTransform: '' }}>
+                Generate the records of {selectedRow.firstName} {selectedRow.lastName} (ID no:
                 {selectedRow.leaseId})?
-              </p>
+              </h5>
               <div
                 style={{
                   display: 'flex',
@@ -638,7 +644,28 @@ function Lease() {
                   gap: '10px'
                 }}
               >
-                <button type="button" onClick={() => handleLeaseGeneratorConfirm(rows)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ownerForm = document.getElementById('ownerForm')
+                    if (ownerForm.checkValidity()) {
+                      let ownerFullName = ownerForm.elements.ownerFullName.value
+                      ownerFullName = ownerFullName
+                        .toLowerCase()
+                        .replace(/\b[a-z]/g, function (letter) {
+                          return letter.toUpperCase()
+                        })
+                      const regex = /^[A-Z][a-zA-Z]*(\s[A-Z][a-zA-Z]*)+(\.[a-zA-Z]*)?$/
+                      if (regex.test(ownerFullName)) {
+                        handleLeaseGeneratorConfirm(rows, ownerFullName)
+                      } else {
+                        toast.error('Invalid input. Please enter a valid name.')
+                      }
+                    } else {
+                      ownerForm.reportValidity()
+                    }
+                  }}
+                >
                   Yes
                 </button>
                 <button

@@ -88,13 +88,22 @@ const Home = () => {
           }
 
           if (dateOfExpiry <= currentDate) {
-            toast(`Lease ${lease.leaseId} has expired!`, toastOptions)
+            toast.error(`Lease ${lease.leaseId} has expired!`, toastOptions)
           } else if (dateOfExpiry <= oneMonthFromNow) {
-            toast(`Lease ${lease.leaseId} is about to expire in less than a month!`, toastOptions)
+            toast.warn(
+              `Lease ${lease.leaseId} is about to expire in less than a month!`,
+              toastOptions
+            )
           } else if (dateOfExpiry <= threeMonthsFromNow) {
-            toast(`Lease ${lease.leaseId} is about to expire in less than 3 months!`, toastOptions)
+            toast.warn(
+              `Lease ${lease.leaseId} is about to expire in less than 3 months!`,
+              toastOptions
+            )
           } else if (dateOfExpiry <= sixMonthsFromNow) {
-            toast(`Lease ${lease.leaseId} is about to expire in less than 6 months!`, toastOptions)
+            toast.warn(
+              `Lease ${lease.leaseId} is about to expire in less than 6 months!`,
+              toastOptions
+            )
           }
 
           createdToasts.current.add(lease.leaseId)

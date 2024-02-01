@@ -19,7 +19,7 @@ const expressImageServer = express()
 let mainWindow
 let mainToken = null
 let pdfViewerWindow = null
-function pdfProcessor(leaseDetails) {
+function pdfProcessor(leaseDetails, ownerFullName) {
   console.log('leasedeails', leaseDetails)
   const diffInMonths =
     (new Date(leaseDetails.dateOfExpiry).getFullYear() -
@@ -50,7 +50,7 @@ function pdfProcessor(leaseDetails) {
     .fontSize(12)
     .text('by and between ', { continued: true })
     .font('Helvetica-Bold')
-    .text('John Doe (Landlord)', { continued: true })
+    .text(`${ownerFullName} (Landlord)`, { continued: true })
     .font('Helvetica')
     .text(' , and ', { continued: true })
     .font('Helvetica-Bold')
@@ -214,7 +214,7 @@ function createWindow() {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       // preload: join(__dirname, '../preload/preload.js'),
-      preload: path.join(app.getAppPath(), 'src', 'preload', 'preload.js'),
+      preload: path.join(app.getAppPath(), is.dev ? 'src' : 'out', 'preload', 'preload.js'),
       nodeIntegration: false, //this is false because we are using preload script
       sandbox: false,
       nativeWindowOpen: true //**** add this**
@@ -1633,10 +1633,10 @@ app.whenReady().then(() => {
     }
   )
 
-  ipcMain.on('print-document', (event, leaseDetails) => {
+  ipcMain.on('print-document', (event, leaseDetails, ownerFullName) => {
     // console.log("hlo from ipcMain:", leaseDetails);
     if (!pdfViewerWindow) {
-      pdfProcessor(leaseDetails)
+      pdfProcessor(leaseDetails, ownerFullName)
     }
   })
 

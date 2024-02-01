@@ -1458,6 +1458,7 @@ function getAdvanceDetailsQuery(userId) {
 }
 
 function addPayableDetailsQuery(userId, payableData) {
+  console.log('payableData', payableData)
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO payable_details(userId, date, description, amount, payable_to) VALUES(?, ?, ?, ?, ?)`,
@@ -1466,7 +1467,7 @@ function addPayableDetailsQuery(userId, payableData) {
         payableData.date,
         payableData.description,
         payableData.amount,
-        payableData.payReceive
+        payableData.payable_to
       ],
       function (err) {
         if (err) {
@@ -1488,7 +1489,7 @@ function addReceivableDetailsQuery(userId, receivableData) {
         receivableData.date,
         receivableData.description,
         receivableData.amount,
-        receivableData.payReceive
+        receivableData.receivable_from
       ],
       function (err) {
         if (err) {
@@ -1545,8 +1546,8 @@ function updateUserDetailsQuery(loggedInUserId, userDataArray) {
 
           let totalChanges = 0
           const promises = userDataArray.map((userData) => {
-            console.log('userId', userData.userid)
-            console.log('isAdmin', isAdmin, 'isSuperUser', isSuperUser)
+            // console.log('userId', userData.userid)
+            // console.log('isAdmin', isAdmin, 'isSuperUser', isSuperUser)
 
             if (isAdmin && !isSuperUser) {
               // Admin user: deny isSuperUser changes
@@ -1555,7 +1556,7 @@ function updateUserDetailsQuery(loggedInUserId, userDataArray) {
               }
             } else if (isSuperUser) {
               // Superuser: deny self demotion
-              console.log('i am super')
+              // console.log('i am super')
               if (loggedInUserId === userData.userid && userData.isSuperUser === 0) {
                 delete userData.isSuperUser
               }
@@ -1703,16 +1704,17 @@ function updateSalaryIncentivesDetailsQuery(loggedInUserId, salaryDataArray) {
 function updatePettyDetailsQuery(userId, pettyDataArray) {
   console.log('userId', userId, 'pettyDataArray', pettyDataArray)
   let totalChanges = 0
-  const promises = pettyDataArray.map((pettyData) => {
+
+  const updatePromises = pettyDataArray.map((pettyData) => {
     console.log('pettyId', pettyData.pettyId)
-    const query = `UPDATE petty_details SET date = ?, description = ?, amount = ? WHERE pettyId = ? AND userId = ?`
-    const params = [
-      pettyData.date,
-      pettyData.description,
-      pettyData.amount,
-      pettyData.pettyId,
-      userId
-    ]
+
+    const fields = Object.keys(pettyData).filter((key) => key !== 'pettyId')
+
+    const query = `UPDATE petty_details SET ${fields
+      .map((field) => `${field} = ?`)
+      .join(', ')} WHERE pettyId = ? AND userId = ?`
+
+    const params = [...fields.map((field) => pettyData[field]), pettyData.pettyId, userId]
 
     return new Promise((resolve, reject) => {
       db.run(query, params, function (err) {
@@ -1726,22 +1728,32 @@ function updatePettyDetailsQuery(userId, pettyDataArray) {
     })
   })
 
-  return Promise.all(promises).then(() => {
-    console.log(`Total row(s) updated: ${totalChanges}`)
-    return totalChanges
-  })
+  return Promise.all(updatePromises)
+    .then(() => {
+      console.log(`Total row(s) updated: ${totalChanges}`)
+      return totalChanges
+    })
+    .catch((err) => {
+      console.error('Error updating database:', err)
+      throw err
+    })
 }
 
 function updateCashAccountDetailsQuery(userId, cashAccountDataArray) {
   console.log('userId', userId, 'cashAccountDataArray', cashAccountDataArray)
   let totalChanges = 0
-  const promises = cashAccountDataArray.map((cashAccountData) => {
+
+  const updatePromises = cashAccountDataArray.map((cashAccountData) => {
     console.log('cashAccountId', cashAccountData.cashAccountId)
-    const query = `UPDATE cash_account_details SET date = ?, description = ?, amount = ? WHERE cashAccountId = ? AND userId = ?`
+
+    const fields = Object.keys(cashAccountData).filter((key) => key !== 'cashAccountId')
+
+    const query = `UPDATE cash_account_details SET ${fields
+      .map((field) => `${field} = ?`)
+      .join(', ')} WHERE cashAccountId = ? AND userId = ?`
+
     const params = [
-      cashAccountData.date,
-      cashAccountData.description,
-      cashAccountData.amount,
+      ...fields.map((field) => cashAccountData[field]),
       cashAccountData.cashAccountId,
       userId
     ]
@@ -1758,43 +1770,48 @@ function updateCashAccountDetailsQuery(userId, cashAccountDataArray) {
     })
   })
 
-  return Promise.all(promises).then(() => {
-    console.log(`Total row(s) updated: ${totalChanges}`)
-    return totalChanges
-  })
+  return Promise.all(updatePromises)
+    .then(() => {
+      console.log(`Total row(s) updated: ${totalChanges}`)
+      return totalChanges
+    })
+    .catch((err) => {
+      console.error('Error updating database:', err)
+      throw err
+    })
 }
 
 function updatePayableDetailsQuery(loggedInUserId, payableDataArray) {
-  console.log('loggedInUserId', loggedInUserId, 'payableDataArray', payableDataArray)
+  // console.log('loggedInUserId', loggedInUserId, 'payableDataArray', payableDataArray)
   let totalChanges = 0
 
-  // Create an array of promises for each database update operation
   const updatePromises = payableDataArray.map((payableData) => {
     console.log('payableId', payableData.payableId)
-    const query = `UPDATE payable_details SET date = ?, description = ?, amount = ?, payable_to = ? WHERE payableId = ? AND userid = ?`
+
+    const fields = Object.keys(payableData).filter((key) => key !== 'payableId')
+
+    const query = `UPDATE payable_details SET ${fields
+      .map((field) => `${field} = ?`)
+      .join(', ')} WHERE payableId = ? AND userid = ?`
+
     const params = [
-      payableData.date,
-      payableData.description,
-      payableData.amount,
-      payableData.payable_to,
+      ...fields.map((field) => payableData[field]),
       payableData.payableId,
       loggedInUserId
     ]
 
-    // Wrap the db.run operation in a promise
     return new Promise((resolve, reject) => {
       db.run(query, params, function (err) {
         if (err) {
           reject(err)
         } else {
           totalChanges += this.changes
-          resolve() // Resolve the promise when the update is complete
+          resolve()
         }
       })
     })
   })
 
-  // Use Promise.all to wait for all update promises to resolve
   return Promise.all(updatePromises)
     .then(() => {
       console.log(`Total row(s) updated: ${totalChanges}`)
@@ -1802,41 +1819,41 @@ function updatePayableDetailsQuery(loggedInUserId, payableDataArray) {
     })
     .catch((err) => {
       console.error('Error updating database:', err)
-      throw err // Rethrow the error to be caught by the caller
+      throw err
     })
 }
 
 function updateReceivableDetailsQuery(loggedInUserId, receivableDataArray) {
-  console.log('loggedInUserId', loggedInUserId, 'receivableDataArray', receivableDataArray)
+  // console.log('loggedInUserId', loggedInUserId, 'receivableDataArray', receivableDataArray)
   let totalChanges = 0
 
-  // Create an array of promises for each database update operation
   const updatePromises = receivableDataArray.map((receivableData) => {
     console.log('receivableId', receivableData.receivableId)
-    const query = `UPDATE receivable_details SET date = ?, description = ?, amount = ?, receivable_from = ? WHERE receivableId = ? AND userid = ?`
+
+    const fields = Object.keys(receivableData).filter((key) => key !== 'receivableId')
+
+    const query = `UPDATE receivable_details SET ${fields
+      .map((field) => `${field} = ?`)
+      .join(', ')} WHERE receivableId = ? AND userid = ?`
+
     const params = [
-      receivableData.date,
-      receivableData.description,
-      receivableData.amount,
-      receivableData.receivable_from,
+      ...fields.map((field) => receivableData[field]),
       receivableData.receivableId,
       loggedInUserId
     ]
 
-    // Wrap the db.run operation in a promise
     return new Promise((resolve, reject) => {
       db.run(query, params, function (err) {
         if (err) {
           reject(err)
         } else {
           totalChanges += this.changes
-          resolve() // Resolve the promise when the update is complete
+          resolve()
         }
       })
     })
   })
 
-  // Use Promise.all to wait for all update promises to resolve
   return Promise.all(updatePromises)
     .then(() => {
       console.log(`Total row(s) updated: ${totalChanges}`)
@@ -1844,27 +1861,28 @@ function updateReceivableDetailsQuery(loggedInUserId, receivableDataArray) {
     })
     .catch((err) => {
       console.error('Error updating database:', err)
-      throw err // Rethrow the error to be caught by the caller
+      throw err
     })
 }
 
-function updateAdvanceDetailsQuery(userId, advanceDataArray) {
+async function updateAdvanceDetailsQuery(userId, advanceDataArray) {
   console.log('userId', userId, 'advanceDataArray', advanceDataArray)
   let totalChanges = 0
 
   // Create an array of promises for each database update operation
   const updatePromises = advanceDataArray.map((advanceData) => {
     console.log('advanceId', advanceData.advanceId)
-    const query = `UPDATE advance_details SET amount = ?, recipient = ?, dateIssued = ?, dateSettled = ?, status = ? WHERE advanceId = ? AND userId = ?`
-    const params = [
-      advanceData.amount,
-      advanceData.recipient,
-      advanceData.dateIssued,
-      advanceData.dateSettled,
-      advanceData.status,
-      advanceData.advanceId,
-      userId
-    ]
+
+    // Get the fields from the advanceData object
+    const fields = Object.keys(advanceData).filter((key) => key !== 'advanceId')
+
+    // Build the query dynamically based on the fields in advanceData
+    const query = `UPDATE advance_details SET ${fields
+      .map((field) => `${field} = ?`)
+      .join(', ')} WHERE advanceId = ? AND userId = ?`
+
+    // Build the params array dynamically based on the fields in advanceData
+    const params = [...fields.map((field) => advanceData[field]), advanceData.advanceId, userId]
 
     // Wrap the db.run operation in a promise
     return new Promise((resolve, reject) => {
@@ -1891,55 +1909,49 @@ function updateAdvanceDetailsQuery(userId, advanceDataArray) {
     })
 }
 
-function updateFacilityDetailsQuery(facilityDataArray) {
-  return new Promise((resolve, reject) => {
-    let totalChanges = 0
-    const promises = facilityDataArray.map((facilityData) => {
-      if (facilityData.facilityId == null) {
-        reject('facilityId is required')
-        return
-      }
+async function updateFacilityDetailsQuery(facilityDataArray) {
+  let totalChanges = 0
 
-      const query = `
-        UPDATE facility_details 
-        SET facilityType = ?, providerName = ?, contractStart = ?, contractEnd = ?, contractCost = ?, 
-            services = ?, frequency = ?, contactInformation = ?, estimatedCharge = ?, status = ?, remarks = ?
-        WHERE facilityId = ?
-      `
-      const params = [
-        facilityData.facilityType ?? 'n/a',
-        facilityData.providerName ?? 'n/a',
-        facilityData.contractStart ?? 'n/a',
-        facilityData.contractEnd ?? 'n/a',
-        facilityData.contractCost ?? '0',
-        facilityData.services ?? 'n/a',
-        facilityData.frequency ?? 'n/a',
-        facilityData.contactInformation ?? 'n/a',
-        facilityData.estimatedCharge ?? '0',
-        facilityData.status ?? 'unfixed',
-        facilityData.remarks ?? 'n/a',
-        facilityData.facilityId
-      ]
+  // Create an array of promises for each database update operation
+  const updatePromises = facilityDataArray.map((facilityData) => {
+    if (facilityData.facilityId == null) {
+      return Promise.reject('facilityId is required')
+    }
 
-      return new Promise((resolve, reject) => {
-        db.run(query, params, function (err) {
-          if (err) {
-            reject(err)
-          } else {
-            totalChanges += this.changes
-            resolve()
-          }
-        })
+    // Get the fields from the facilityData object
+    const fields = Object.keys(facilityData).filter((key) => key !== 'facilityId')
+
+    // Build the query dynamically based on the fields in facilityData
+    const query = `UPDATE facility_details SET ${fields
+      .map((field) => `${field} = ?`)
+      .join(', ')} WHERE facilityId = ?`
+
+    // Build the params array dynamically based on the fields in facilityData
+    const params = [...fields.map((field) => facilityData[field] ?? 'n/a'), facilityData.facilityId]
+
+    // Wrap the db.run operation in a promise
+    return new Promise((resolve, reject) => {
+      db.run(query, params, function (err) {
+        if (err) {
+          reject(err)
+        } else {
+          totalChanges += this.changes
+          resolve() // Resolve the promise when the update is complete
+        }
       })
     })
-
-    Promise.all(promises)
-      .then(() => resolve(totalChanges))
-      .catch((err) => {
-        console.error(err)
-        reject(err)
-      })
   })
+
+  // Use Promise.all to wait for all update promises to resolve
+  return Promise.all(updatePromises)
+    .then(() => {
+      console.log(`Total row(s) updated: ${totalChanges}`)
+      return totalChanges
+    })
+    .catch((err) => {
+      console.error('Error updating database:', err)
+      throw err // Rethrow the error to be caught by the caller
+    })
 }
 
 function deleteUserDetailsQuery(userId, userDetailIds) {

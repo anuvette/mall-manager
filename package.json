@@ -12,15 +12,9 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "build:win": "npm run build && electron-builder --win --config",
+    "build:win": "npm run build && electron-builder --win --config ./electron-builder.yml",
     "build:mac": "npm run build && electron-builder --mac --config",
     "build:linux": "npm run build && electron-builder --linux --config"
-  },
-  "build": {
-    "appId": "com.anuvetteLLC.mallmanager",
-    "win": {
-      "icon": "resources/icon.ico"
-    }
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
@@ -37,6 +31,7 @@
     "react-router-dom": "^6.19.0",
     "react-table": "^7.8.0",
     "react-toastify": "^10.0.4",
+    "sonner": "^1.4.0",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {

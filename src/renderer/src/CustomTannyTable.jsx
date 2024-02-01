@@ -1,169 +1,105 @@
-import React from 'react'
-import './assets/CustomTannyTable.css'
-import { useTable, useSortBy } from 'react-table'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import './assets/EmployeeTable.css'
+import { useTable, useSortBy, useFilters } from 'react-table'
 
-const CustomTannyTable = ({
-  typeId,
-  data,
-  columns,
-  insertFunction,
-  updateFunction,
-  deleteFunction
-}) => {
-  const [activeRows, setActiveRows] = React.useState([])
-  const [addingMode, setAddingMode] = React.useState(false)
-  const [editingMode, setEditingMode] = React.useState(false)
-  const [editedRow, setEditedRow] = React.useState({ updatedRows: [] })
+const CustomTannyTable = ({ typeId, data, insertFunction, updateFunction, deleteFunction }) => {
+  const [activeRows, setActiveRows] = useState([])
+  const [addingMode, setAddingMode] = useState(false)
+  const [editingMode, setEditingMode] = useState(false)
+  const [filterInput, setFilterInput] = useState('')
 
-  const [revertEditedRow, setRevertEditedRow] = React.useState([])
-  const dateRef = React.useRef()
-  const descriptionRef = React.useRef()
-  const amountRef = React.useRef()
-  const editModeSaveButtonRef = React.useRef()
-  const addModeSaveButtonRef = React.useRef()
-
-  const handleEditInputChange = (rowData, originalRowData) => {
-    console.log('row data', rowData)
-    setEditedRow((prevRows) => {
-      const existingRowIndex = prevRows.updatedRows.findIndex(
-        (row) => row[typeId] === rowData[typeId]
-      )
-
-      let updatedRows
-      if (existingRowIndex !== -1) {
-        updatedRows = [...prevRows.updatedRows]
-
-        updatedRows[existingRowIndex] = Object.entries(rowData).reduce(
-          (acc, [key, value]) => {
-            if (value !== null) {
-              acc[key] = value
-            }
-            return acc
-          },
-          { ...updatedRows[existingRowIndex] }
-        )
-      } else {
-        const newRow = Object.entries(rowData).reduce(
-          (acc, [key, value]) => {
-            if (value !== null) {
-              acc[key] = value
-            }
-            return acc
-          },
-          { ...originalRowData }
-        )
-
-        updatedRows = [...prevRows.updatedRows, newRow]
-      }
-
-      console.log('Updated rows:', updatedRows)
-      return { updatedRows }
-    })
+  const addModeRefs = {
+    date: useRef(),
+    description: useRef(),
+    amount: useRef()
   }
 
-  const { getTableProps, getTableBodyProps, headerGroups, footerGroups, rows, prepareRow } =
-    useTable(
-      {
-        columns,
-        data: data || [],
-        autoResetSortBy: false //DONT REMOVE THIS IT CAUSES UNEXPLAINED BUGSs
-      },
-      useSortBy // Using the useSortBy hook here
-    )
+  const [changes, setChanges] = useState([])
 
-  const handleAddClick = () => {
-    setAddingMode((prevAddingMode) => !prevAddingMode)
-    setEditingMode(false) // Reset editing mode when toggling add mode
+  const editModeSaveButtonRef = useRef()
+  const addModeSaveButtonRef = useRef()
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'ID',
+        accessor: typeId
+      },
+      {
+        Header: 'SN',
+        accessor: 'sn',
+        Cell: ({ row }) => {
+          return <div>{row.index + 1}</div>
+        }
+      },
+      {
+        Header: 'Date',
+        accessor: 'date'
+      },
+      {
+        Header: 'Description',
+        accessor: 'description',
+        Footer: (info) => {
+          const total = React.useMemo(
+            () => info.rows.reduce((sum, row) => sum + parseFloat(row.values.amount || 0), 0),
+            [info.rows]
+          )
+          return <>Total: {total}</>
+        }
+      },
+      {
+        Header: 'Amount',
+        accessor: 'amount'
+      }
+    ],
+    []
+  )
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    footerGroups,
+    rows,
+    prepareRow,
+    setFilter
+  } = useTable(
+    {
+      columns,
+      data: data || [],
+      autoResetSortBy: false
+    },
+    useFilters,
+    useSortBy // Using the useSortBy hook here
+  )
+
+  const handleFilterChange = (e) => {
+    const value = e.target.value || undefined
+    setFilter('description', value)
+    setFilterInput(value)
   }
 
   const handleAddSaveClick = () => {
     setAddingMode(false)
     setEditingMode(false)
+    setActiveRows([])
+    setChanges([])
 
     const newData = {
-      date: dateRef.current.value,
-      description: descriptionRef.current.value,
-      amount: amountRef.current.value
+      date: addModeRefs.date.current.value,
+      amount: addModeRefs.amount.current.value,
+      description: addModeRefs.description.current.value
     }
 
     console.log('New Data', newData)
     console.log('old data', data)
 
-    insertFunction(newData)
-    // Reset refs
-    dateRef.current.value = ''
-    descriptionRef.current.value = ''
-    amountRef.current.value = ''
+    insertFunction.mutate(newData)
+
+    addModeRefs.date.current.value = ''
+    addModeRefs.amount.current.value = ''
+    addModeRefs.description.current.value = ''
   }
-
-  const handleEditSaveClick = () => {
-    setAddingMode(false)
-    setEditingMode(false)
-    console.log('edit mode', activeRows)
-    updateFunction(editedRow.updatedRows)
-  }
-
-  const handleEscapeKeyDown = (newRef, original) => {
-    setRevertEditedRow((prevRefs) => {
-      const updatedRefs = [...prevRefs, { ref: newRef, original: original }]
-      console.log('Updated refs:', updatedRefs)
-      return updatedRefs
-    })
-  }
-
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setEditingMode(false)
-        setAddingMode(false)
-        setActiveRows([])
-        setEditedRow({ updatedRows: [] })
-        console.log('revertEditedRow', revertEditedRow)
-        revertEditedRow.forEach((row) => {
-          if (typeof row.ref === 'function') {
-            // If it's a function, call it with the original value
-            row.ref(row.original)
-          } else {
-            // Otherwise, set the ref's value to the original value
-            row.ref.current.value = row.original // reset value
-          }
-        })
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [revertEditedRow])
-
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === 'a') {
-        // If there are no active rows, return early
-        if (activeRows.length === 0 || document.activeElement.tagName === 'INPUT') {
-          return
-        }
-
-        const firstRow = activeRows[0]
-        e.preventDefault()
-
-        if (typeId in firstRow) {
-          setActiveRows(rows.filter((row) => typeId in row.original).map((row) => row.original))
-        } else {
-          return
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [rows, activeRows])
 
   React.useEffect(() => {
     if (editingMode) {
@@ -195,74 +131,148 @@ const CustomTannyTable = ({
     }
   }, [editingMode, addingMode])
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setEditingMode(false)
+        setAddingMode(false)
+        setActiveRows([])
+        setChanges([])
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (editingMode && e.ctrlKey && e.key === 'a') {
+        if (e.target instanceof HTMLInputElement) {
+          return
+        }
+
+        e.preventDefault()
+        setActiveRows(rows.map((row) => row.original))
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [rows, editingMode])
+
   return (
-    <div className="CustomTannyTable">
-      <div className="CustomTannyTable__button">
-        <button
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              handleAddClick()
-            }
+    <div className="EmployeeTable">
+      <div className="EmployeeTable__button">
+        <input
+          style={{
+            border: '1px solid white',
+            borderRadius: 0,
+            backgroundColor: 'transparent',
+            color: 'white'
           }}
-          onClick={handleAddClick}
-          style={{ fontSize: addingMode ? '45px' : '50px' }}
+          value={filterInput}
+          onChange={handleFilterChange}
+          placeholder={'Search by Description Name'}
+        />
+        <button
+          onClick={() => {
+            setAddingMode((prevAddingMode) => !prevAddingMode)
+
+            setEditingMode(false)
+          }}
+          style={{ fontSize: '50px' }}
         >
-          {addingMode ? '✕' : '+'}
+          +
+        </button>
+        <button
+          onClick={() => {
+            setEditingMode((prevEditingMode) => !prevEditingMode)
+            setAddingMode(false)
+          }}
+          style={{ fontSize: '45px' }}
+        >
+          &#9998; {/* EDIT BUTTON */}
         </button>
         {addingMode && (
-          <button
-            ref={addModeSaveButtonRef}
-            onClick={handleAddSaveClick}
-            style={{ fontSize: '49px' }}
-          >
-            &#x1F5AB;
-            {/* ADD MODE SAVE BUTTON */}
-          </button>
+          <>
+            <button
+              ref={addModeSaveButtonRef}
+              onClick={handleAddSaveClick}
+              style={{ fontSize: '49px' }}
+            >
+              &#x1F5AB;
+              {/* ADD MODE SAVE BUTTON */}
+            </button>
+          </>
         )}
         {editingMode && (
           <>
             <button
               ref={editModeSaveButtonRef}
-              onClick={handleEditSaveClick}
+              onClick={() => {
+                updateFunction.mutate(changes)
+
+                setEditingMode(false)
+              }}
               style={{ fontSize: '49px' }}
             >
-              &#x1F5AB;
+              &#x1F5AB; {/* EDIT MODE SAVE BUTTON */}
             </button>
-            {/* EDIT MODE SAVE BUTTON */}
             <button
               onClick={() => {
                 let x = activeRows.map((row) => row[typeId])
-                console.log(x)
-                deleteFunction(activeRows.map((row) => row[typeId]))
+                // console.log(x)
+                deleteFunction.mutate(activeRows.map((row) => row[typeId]))
                 setEditingMode(false)
               }}
               style={{ color: 'red' }}
             >
               &#x1F5D1;
-            </button>{' '}
-            {/* Delete BUTTON */}
+              {/* Delete BUTTON */}
+            </button>
           </>
         )}
-        {editingMode || addingMode ? (
-          <p style={{ alignSelf: 'center', color: 'darkgray' }}>
-            Press Esc to revert back(Twice for Date)
-          </p>
-        ) : (
-          ''
+        {(editingMode || addingMode) && (
+          <p style={{ alignSelf: 'center', color: 'darkgray' }}>Press Esc to revert back.</p>
         )}
+
+        {/* ERROR BLOCK */}
       </div>
-      <table {...getTableProps()} className="CustomTannyTable__table">
-        <thead className="CustomTannyTable__tableHeader">
+      {insertFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while inserting: {insertFunction.error.message}
+        </div>
+      )}
+      {updateFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while updating: {updateFunction.error.message}
+        </div>
+      )}
+      {deleteFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while deleting: {deleteFunction.error.message}
+        </div>
+      )}
+      {/* ERROR BLOCK END */}
+
+      <table {...getTableProps()} className="EmployeeTable__table">
+        <thead className="EmployeeTable__tableHeader">
           {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()} className="CustomTannyTable__tableRow">
+            <tr {...headerGroup.getHeaderGroupProps()} className="EmployeeTable__tableRow">
               {headerGroup.headers.map((column) => (
                 <th
                   {...column.getHeaderProps(column.getSortByToggleProps())}
-                  className="CustomTannyTable__tableHeaderCell"
+                  className="EmployeeTable__tableHeaderCell"
                 >
                   {column.render('Header')}
                   {/* Add a sort direction indicator */}
-                  <span className="CustomTannyTable__sortIndicator">
+                  <span className="EmployeeTable__sortIndicator">
                     {column.isSorted ? (column.isSortedDesc ? '↑' : '↓') : ''}
                   </span>
                 </th>
@@ -270,19 +280,19 @@ const CustomTannyTable = ({
             </tr>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()} className="CustomTannyTable__tableBody">
+        <tbody {...getTableBodyProps()} className="EmployeeTable__tableBody">
           {addingMode && (
-            <tr className="CustomTannyTable__tableRow newRow">
-              <td className="CustomTannyTable__tableCell"></td>
-              <td className="CustomTannyTable__tableCell"></td>
-              <td className="CustomTannyTable__tableCell">
-                <input ref={dateRef} type="date" />
+            <tr className="EmployeeTable__tableRow newRow">
+              <td className="EmployeeTable__tableCell"></td>
+              <td className="EmployeeTable__tableCell"></td>
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.date} type="date" />
               </td>
-              <td className="CustomTannyTable__tableCell">
-                <input ref={descriptionRef} type="text" />
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.description} type="text" />
               </td>
-              <td className=" CustomTannyTable__tableCell">
-                <input ref={amountRef} type="number" />
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.amount} type="number" />
               </td>
             </tr>
           )}
@@ -306,7 +316,7 @@ const CustomTannyTable = ({
                     setActiveRows([row.original])
                   }
                 }}
-                className="CustomTannyTable__tableRow"
+                className="EmployeeTable__tableRow"
               >
                 {row.cells.map((cell) => (
                   <td
@@ -315,31 +325,65 @@ const CustomTannyTable = ({
                       setAddingMode(false)
                     }}
                     {...cell.getCellProps()}
-                    className="CustomTannyTable__tableCell"
+                    className="EmployeeTable__tableCell"
+                    style={{
+                      padding: editingMode ? '0px' : '10px',
+                      maxWidth: '100px',
+                      overflow: 'scroll', // Add this line
+                      cursor: cell.column.id === 'password' ? 'not-allowed' : 'pointer'
+                    }}
                   >
-                    {cell.render('Cell', {
-                      onInputChange: handleEditInputChange,
-                      onEscapeKeyDown: handleEscapeKeyDown
-                    })}
+                    {editingMode && ![typeId, 'sn'].includes(cell.column.id) ? (
+                      <input
+                        style={{
+                          border: '1px solid white',
+                          borderRadius: 0,
+                          cursor: 'pointer'
+                        }}
+                        className="EmployeeTable__input--EditMode"
+                        type={
+                          cell.column.id === 'amount'
+                            ? 'number'
+                            : cell.column.id === 'date'
+                              ? 'date'
+                              : 'text'
+                        }
+                        defaultValue={cell.value}
+                        onChange={(e) => {
+                          const newChanges = [...changes]
+                          const changeIndex = newChanges.findIndex(
+                            (change) => change[typeId] === row.original[typeId]
+                          )
+                          if (changeIndex !== -1) {
+                            newChanges[changeIndex] = {
+                              ...newChanges[changeIndex],
+                              [cell.column.id]: e.target.value
+                            }
+                          } else {
+                            newChanges.push({
+                              [typeId]: row.original[typeId],
+                              [cell.column.id]: e.target.value
+                            })
+                          }
+                          setChanges(newChanges)
+                          console.log(newChanges) // Log the changes to the console
+                        }}
+                      />
+                    ) : (
+                      cell.render('Cell')
+                    )}
                   </td>
                 ))}
               </tr>
             )
           })}
         </tbody>
-        <tfoot
-          className="CustomTannyTable__tableFooter"
-          style={{
-            background: '#55608f'
-          }}
-        >
+        <tfoot style={{ background: '#55608f' }}>
           {footerGroups.map((group) => (
-            <tr className="CustomTannyTable__tableFooter--Row" {...group.getFooterGroupProps()}>
-              {group.headers.map((column) =>
-                column.Footer ? (
-                  <td {...column.getFooterProps()}>{column.render('Footer')}</td>
-                ) : null
-              )}
+            <tr {...group.getFooterGroupProps()}>
+              {group.headers.map((column) => (
+                <td {...column.getFooterProps()}>{column.render('Footer')}</td>
+              ))}
             </tr>
           ))}
         </tfoot>

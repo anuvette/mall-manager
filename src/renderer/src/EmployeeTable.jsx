@@ -45,10 +45,6 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
   })
 
   const [changes, setChanges] = useState([])
-  const [editCheckBox, setEditCheckBox] = useState({
-    isAdmin: false,
-    isSuperUser: false
-  })
 
   const editModeSaveButtonRef = useRef()
   const addModeSaveButtonRef = useRef()
@@ -155,6 +151,7 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
     if (editingMode) {
       const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
+          console.log('hello form enter keydown')
           editModeSaveButtonRef.current.click()
         }
       }
@@ -241,23 +238,12 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
               &#x1F5AB;
               {/* ADD MODE SAVE BUTTON */}
             </button>
-            <button
-              onClick={() => {
-                let x = activeRows.map((row) => row[typeId])
-                console.log(x)
-                deleteFunction.mutate(activeRows.map((row) => row[typeId]))
-                setAddingMode(false)
-              }}
-              style={{ color: 'red' }}
-            >
-              &#x1F5D1;
-              {/* Delete BUTTON */}
-            </button>
           </>
         )}
         {editingMode && (
           <>
             <button
+              ref={editModeSaveButtonRef}
               onClick={() => {
                 updateFunction.mutate(changes)
 
@@ -270,7 +256,7 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
             <button
               onClick={() => {
                 let x = activeRows.map((row) => row[typeId])
-                console.log(x)
+                // console.log(x)
                 deleteFunction.mutate(activeRows.map((row) => row[typeId]))
                 setEditingMode(false)
               }}
@@ -348,7 +334,7 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
               <td className="EmployeeTable__tableCell">
                 <input ref={addModeRefs.secondaryContact} type="number" />
               </td>
-              <td style={{ border: '1px solid white' }} className="AdvancesTable__tableCell">
+              <td style={{ border: '1px solid white' }} className="EmployeeTable__tableCell">
                 <label>
                   <input
                     style={{ border: '1px solid white' }}
@@ -371,7 +357,7 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
                   </p>
                 </label>
               </td>
-              <td style={{ border: '1px solid white' }} className="AdvancesTable__tableCell">
+              <td style={{ border: '1px solid white' }} className="EmployeeTable__tableCell">
                 <label>
                   <input
                     style={{ border: '1px solid white' }}

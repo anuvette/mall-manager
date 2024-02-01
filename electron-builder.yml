@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.anuvetteLLC.mallmanager
 productName: mall-manager
 directories:
   buildResources: build
@@ -11,10 +11,14 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: mall-manager
+  executableName: 'Mall Manager'
+  icon: resources/icon.ico
 nsis:
+  oneClick: false
+  perMachine: false
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
+  allowToChangeInstallationDirectory: true
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:

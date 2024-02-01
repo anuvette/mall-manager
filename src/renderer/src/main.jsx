@@ -36,7 +36,7 @@ createRoot(root).render(
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
         <HashRouter>
-          <ToastContainer />
+          <ToastContainer hideProgressBar={true} />
           <Routes>
             <Route path="/" element={<SignIn />} />
             <Route path="/SignIn" element={<SignIn />} />

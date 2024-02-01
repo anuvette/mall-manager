@@ -1,6 +1,7 @@
 import useAuth from './customHooks/useAuth'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import './assets/Space-Component.css'
+import { toast } from 'react-toastify'
 
 const SpaceComponent = ({ spaceItem }) => {
   const openModal = () => {
@@ -32,8 +33,11 @@ const SpaceComponent = ({ spaceItem }) => {
   const spaceDeletionMutation = useMutation({
     mutationFn: window.electronAPI.deleteSpace,
     onSuccess: () => {
-      // data is the value that mutationFn resolved to
       queryClient.invalidateQueries(['floorData'])
+      toast.success('Space deleted successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
     }
   })
 

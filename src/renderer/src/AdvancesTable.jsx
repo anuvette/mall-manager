@@ -1,176 +1,149 @@
-import React from 'react'
-import './assets/AdvancesTable.css'
-import { useTable, useSortBy } from 'react-table'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import './assets/EmployeeTable.css'
+import { useTable, useSortBy, useFilters } from 'react-table'
 
-const AdvancesTable = ({
-  typeId,
-  data,
-  columns,
-  insertFunction,
-  updateFunction,
-  deleteFunction
-}) => {
-  const [activeRows, setActiveRows] = React.useState([])
-  const [addingMode, setAddingMode] = React.useState(false)
-  const [editingMode, setEditingMode] = React.useState(false)
-  const [editedRow, setEditedRow] = React.useState({ updatedRows: [] })
+function CustomCheckbox({ value, onChange }) {
+  const [isChecked, setIsChecked] = useState(value === 1)
 
-  const [revertEditedRow, setRevertEditedRow] = React.useState([])
-  const amountRef = React.useRef()
-  const recipientRef = React.useRef()
-  const dateIssuedRef = React.useRef()
-  const dateSettledRef = React.useRef()
-  const [status, setStatus] = React.useState(false)
-
-  const editModeSaveButtonRef = React.useRef()
-  const addModeSaveButtonRef = React.useRef()
-
-  const handleEditInputChange = (rowData, originalRowData) => {
-    console.log('row data', rowData)
-    setEditedRow((prevRows) => {
-      const existingRowIndex = prevRows.updatedRows.findIndex(
-        (row) => row[typeId] === rowData[typeId]
-      )
-
-      let updatedRows
-      if (existingRowIndex !== -1) {
-        updatedRows = [...prevRows.updatedRows]
-
-        updatedRows[existingRowIndex] = Object.entries(rowData).reduce(
-          (acc, [key, value]) => {
-            if (value !== null) {
-              acc[key] = value
-            }
-            return acc
-          },
-          { ...updatedRows[existingRowIndex] }
-        )
-      } else {
-        const newRow = Object.entries(rowData).reduce(
-          (acc, [key, value]) => {
-            if (value !== null) {
-              acc[key] = value
-            }
-            return acc
-          },
-          { ...originalRowData }
-        )
-
-        updatedRows = [...prevRows.updatedRows, newRow]
-      }
-
-      console.log('Updated rows:', updatedRows)
-      return { updatedRows }
-    })
+  const handleClick = () => {
+    setIsChecked(!isChecked)
+    onChange(!isChecked ? 1 : 0)
   }
 
-  const { getTableProps, getTableBodyProps, headerGroups, footerGroups, rows, prepareRow } =
-    useTable(
-      {
-        columns,
-        data: data || [],
-        autoResetSortBy: false
-      },
-      useSortBy // Using the useSortBy hook here
-    )
+  return (
+    <button
+      style={{
+        background: 'transparent',
+        border: '1px solid white',
+        borderRadius: 0,
+        width: '100%',
+        color: isChecked ? '#14b8a6' : 'hsl(0, 100%, 50%)'
+      }}
+      onClick={handleClick}
+    >
+      {isChecked ? 'Yes' : 'No'}
+    </button>
+  )
+}
 
-  const handleAddClick = () => {
-    setAddingMode((prevAddingMode) => !prevAddingMode)
-    setEditingMode(false) // Reset editing mode when toggling add mode
+const AdvancesTable = ({ typeId, data, insertFunction, updateFunction, deleteFunction }) => {
+  const [activeRows, setActiveRows] = useState([])
+  const [addingMode, setAddingMode] = useState(false)
+  const [editingMode, setEditingMode] = useState(false)
+  const [filterInput, setFilterInput] = useState('')
+
+  const addModeRefs = {
+    amount: useRef(),
+    recipient: useRef(),
+    dateIssued: useRef(),
+    dateSettled: useRef()
+  }
+
+  const [checkBoxStates, setCheckBoxStates] = useState({
+    status: false
+  })
+
+  const [changes, setChanges] = useState([])
+
+  const editModeSaveButtonRef = useRef()
+  const addModeSaveButtonRef = useRef()
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'ID',
+        accessor: 'advanceId'
+      },
+      {
+        Header: 'SN',
+        accessor: 'sn',
+        Cell: ({ row }) => {
+          return <div>{row.index + 1}</div>
+        }
+      },
+      {
+        Header: 'Amount',
+        accessor: 'amount'
+      },
+      {
+        Header: 'Recipient',
+        accessor: 'recipient',
+        Footer: (info) => {
+          const total = React.useMemo(
+            () => info.rows.reduce((sum, row) => sum + parseFloat(row.values.amount || 0), 0),
+            [info.rows]
+          )
+          return <>Total: {total}</>
+        }
+      },
+      {
+        Header: 'Date Issued',
+        accessor: 'dateIssued'
+      },
+      {
+        Header: 'Date Settled',
+        accessor: 'dateSettled'
+      },
+      {
+        Header: 'Status',
+        accessor: 'status'
+      }
+    ],
+    []
+  )
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    footerGroups,
+    rows,
+    prepareRow,
+    setFilter
+  } = useTable(
+    {
+      columns,
+      data: data || [],
+      autoResetSortBy: false
+    },
+    useFilters,
+    useSortBy // Using the useSortBy hook here
+  )
+
+  const handleFilterChange = (e) => {
+    const value = e.target.value || undefined
+    setFilter('recipient', value)
+    setFilterInput(value)
   }
 
   const handleAddSaveClick = () => {
     setAddingMode(false)
     setEditingMode(false)
+    setActiveRows([])
+    setChanges([])
 
     const newData = {
-      amount: amountRef.current.value,
-      recipient: recipientRef.current.value,
-      dateIssued: dateIssuedRef.current.value,
-      dateSettled: dateSettledRef.current.value,
-      status: status ? 1 : 0
+      amount: addModeRefs.amount.current.value,
+      recipient: addModeRefs.recipient.current.value,
+      dateIssued: addModeRefs.dateIssued.current.value,
+      dateSettled: addModeRefs.dateSettled.current.value,
+      status: checkBoxStates.status ? 1 : 0
     }
 
     console.log('New Data', newData)
     console.log('old data', data)
 
-    insertFunction(newData)
-    // Reset refs
-    amountRef.current.value = ''
-    recipientRef.current.value = ''
-    dateIssuedRef.current.value = ''
-    dateSettledRef.current.value = ''
-    setStatus(false)
+    insertFunction.mutate(newData)
+
+    addModeRefs.amount.current.value = ''
+    addModeRefs.recipient.current.value = ''
+    addModeRefs.dateIssued.current.value = ''
+    addModeRefs.dateSettled.current.value = ''
+    setCheckBoxStates((prevState) => ({
+      ...prevState,
+      status: false
+    }))
   }
-
-  const handleEditSaveClick = () => {
-    setAddingMode(false)
-    setEditingMode(false)
-    console.log('edit mode', editedRow)
-    updateFunction(editedRow.updatedRows)
-  }
-
-  const handleEscapeKeyDown = (newRef, original) => {
-    setRevertEditedRow((prevRefs) => {
-      const updatedRefs = [...prevRefs, { ref: newRef, original: original }]
-      console.log('Updated refs:', updatedRefs)
-      return updatedRefs
-    })
-  }
-
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setEditingMode(false)
-        setAddingMode(false)
-        setActiveRows([])
-        setEditedRow({ updatedRows: [] })
-        // console.log('revertEditedRow', revertEditedRow)
-        revertEditedRow.forEach((row) => {
-          if (typeof row.ref === 'function') {
-            // If it's a function, call it with the original value
-            row.ref(row.original)
-          } else {
-            // Otherwise, set the ref's value to the original value
-            row.ref.current.value = row.original // reset value
-          }
-        })
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [revertEditedRow])
-
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === 'a') {
-        // If there are no active rows, return early
-        if (activeRows.length === 0 || document.activeElement.tagName === 'INPUT') {
-          return
-        }
-
-        const firstRow = activeRows[0]
-        e.preventDefault()
-
-        if (typeId in firstRow) {
-          setActiveRows(rows.filter((row) => typeId in row.original).map((row) => row.original))
-        } else {
-          return
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [rows, activeRows])
 
   React.useEffect(() => {
     if (editingMode) {
@@ -202,74 +175,148 @@ const AdvancesTable = ({
     }
   }, [editingMode, addingMode])
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setEditingMode(false)
+        setAddingMode(false)
+        setActiveRows([])
+        setChanges([])
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (editingMode && e.ctrlKey && e.key === 'a') {
+        if (e.target instanceof HTMLInputElement) {
+          return
+        }
+
+        e.preventDefault()
+        setActiveRows(rows.map((row) => row.original))
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [rows, editingMode])
+
   return (
-    <div className="AdvancesTable">
-      <div className="AdvancesTable__button">
-        <button
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              handleAddClick()
-            }
+    <div className="EmployeeTable">
+      <div className="EmployeeTable__button">
+        <input
+          style={{
+            border: '1px solid white',
+            borderRadius: 0,
+            backgroundColor: 'transparent',
+            color: 'white'
           }}
-          onClick={handleAddClick}
-          style={{ fontSize: addingMode ? '45px' : '50px' }}
+          value={filterInput}
+          onChange={handleFilterChange}
+          placeholder={'Search by Recipient Name'}
+        />
+        <button
+          onClick={() => {
+            setAddingMode((prevAddingMode) => !prevAddingMode)
+
+            setEditingMode(false)
+          }}
+          style={{ fontSize: '50px' }}
         >
-          {addingMode ? '✕' : '+'}
+          +
+        </button>
+        <button
+          onClick={() => {
+            setEditingMode((prevEditingMode) => !prevEditingMode)
+            setAddingMode(false)
+          }}
+          style={{ fontSize: '45px' }}
+        >
+          &#9998; {/* EDIT BUTTON */}
         </button>
         {addingMode && (
-          <button
-            ref={addModeSaveButtonRef}
-            onClick={handleAddSaveClick}
-            style={{ fontSize: '49px' }}
-          >
-            &#x1F5AB;
-            {/* ADD MODE SAVE BUTTON */}
-          </button>
+          <>
+            <button
+              ref={addModeSaveButtonRef}
+              onClick={handleAddSaveClick}
+              style={{ fontSize: '49px' }}
+            >
+              &#x1F5AB;
+              {/* ADD MODE SAVE BUTTON */}
+            </button>
+          </>
         )}
         {editingMode && (
           <>
             <button
               ref={editModeSaveButtonRef}
-              onClick={handleEditSaveClick}
+              onClick={() => {
+                updateFunction.mutate(changes)
+
+                setEditingMode(false)
+              }}
               style={{ fontSize: '49px' }}
             >
-              &#x1F5AB;
+              &#x1F5AB; {/* EDIT MODE SAVE BUTTON */}
             </button>
-            {/* EDIT MODE SAVE BUTTON */}
             <button
               onClick={() => {
                 let x = activeRows.map((row) => row[typeId])
                 console.log(x)
-                deleteFunction(activeRows.map((row) => row[typeId]))
+                deleteFunction.mutate(activeRows.map((row) => row[typeId]))
                 setEditingMode(false)
               }}
               style={{ color: 'red' }}
             >
               &#x1F5D1;
-            </button>{' '}
-            {/* Delete BUTTON */}
+              {/* Delete BUTTON */}
+            </button>
           </>
         )}
-        {editingMode || addingMode ? (
-          <p style={{ alignSelf: 'center', color: 'darkgray' }}>
-            Press Esc to revert back(Twice for Date)
-          </p>
-        ) : (
-          ''
+        {(editingMode || addingMode) && (
+          <p style={{ alignSelf: 'center', color: 'darkgray' }}>Press Esc to revert back.</p>
         )}
+
+        {/* ERROR BLOCK */}
       </div>
-      <table {...getTableProps()} className="AdvancesTable__table">
-        <thead className="AdvancesTable__tableHeader">
+      {insertFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while inserting: {insertFunction.error.message}
+        </div>
+      )}
+      {updateFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while updating: {updateFunction.error.message}
+        </div>
+      )}
+      {deleteFunction.isError && (
+        <div style={{ color: 'red' }}>
+          An error occurred while deleting: {deleteFunction.error.message}
+        </div>
+      )}
+      {/* ERROR BLOCK END */}
+
+      <table {...getTableProps()} className="EmployeeTable__table">
+        <thead className="EmployeeTable__tableHeader">
           {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()} className="AdvancesTable__tableRow">
+            <tr {...headerGroup.getHeaderGroupProps()} className="EmployeeTable__tableRow">
               {headerGroup.headers.map((column) => (
                 <th
                   {...column.getHeaderProps(column.getSortByToggleProps())}
-                  className="AdvancesTable__tableHeaderCell"
+                  className="EmployeeTable__tableHeaderCell"
                 >
                   {column.render('Header')}
                   {/* Add a sort direction indicator */}
-                  <span className="AdvancesTable__sortIndicator">
+                  <span className="EmployeeTable__sortIndicator">
                     {column.isSorted ? (column.isSortedDesc ? '↑' : '↓') : ''}
                   </span>
                 </th>
@@ -277,41 +324,43 @@ const AdvancesTable = ({
             </tr>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()} className="AdvancesTable__tableBody">
+        <tbody {...getTableBodyProps()} className="EmployeeTable__tableBody">
           {addingMode && (
-            <tr className="AdvancesTable__tableRow newRow">
-              <td className="AdvancesTable__tableCell"></td>
-              <td className="AdvancesTable__tableCell"></td>
-              <td className="AdvancesTable__tableCell">
-                <input ref={amountRef} type="number" />
+            <tr className="EmployeeTable__tableRow newRow">
+              <td className="EmployeeTable__tableCell"></td>
+              <td className="EmployeeTable__tableCell"></td>
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.amount} type="number" />
               </td>
-              <td className="AdvancesTable__tableCell">
-                <input ref={recipientRef} type="text" />
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.recipient} type="text" />
               </td>
-              <td className="AdvancesTable__tableCell">
-                <input ref={dateIssuedRef} type="date" />
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.dateIssued} type="date" />
               </td>
-              <td className="AdvancesTable__tableCell">
-                <input ref={dateSettledRef} type="date" />
+              <td className="EmployeeTable__tableCell">
+                <input ref={addModeRefs.dateSettled} type="date" />
               </td>
-              <td style={{ border: '1px solid white' }} className="AdvancesTable__tableCell">
+              <td style={{ border: '1px solid white' }} className="EmployeeTable__tableCell">
                 <label>
                   <input
                     style={{ border: '1px solid white' }}
                     type="checkbox"
-                    checked={status}
+                    checked={checkBoxStates.status}
                     onChange={() => {
-                      const newStatus = !status
-                      setStatus(newStatus)
-                      console.log(`Checkbox clicked. New value: ${newStatus ? 1 : 0}`)
+                      setCheckBoxStates((prevState) => ({
+                        ...prevState,
+                        status: !prevState.status
+                      }))
+                      console.log(`Checkbox clicked. New value: ${checkBoxStates.status ? 1 : 0}`)
                     }}
                   />
                   <p
                     style={{
-                      color: status ? '#14b8a6' : 'hsl(0, 100%, 50%)'
+                      color: checkBoxStates.status ? '#14b8a6' : 'hsl(0, 100%, 50%)'
                     }}
                   >
-                    {status ? 'Settled' : 'Unsettled'}
+                    {checkBoxStates.status ? 'Yes' : 'No'}
                   </p>
                 </label>
               </td>
@@ -337,7 +386,7 @@ const AdvancesTable = ({
                     setActiveRows([row.original])
                   }
                 }}
-                className="AdvancesTable__tableRow"
+                className="EmployeeTable__tableRow"
               >
                 {row.cells.map((cell) => (
                   <td
@@ -346,12 +395,82 @@ const AdvancesTable = ({
                       setAddingMode(false)
                     }}
                     {...cell.getCellProps()}
-                    className="AdvancesTable__tableCell"
+                    className="EmployeeTable__tableCell"
+                    style={{
+                      padding: editingMode ? '0px' : '10px',
+                      maxWidth: '100px',
+                      overflow: 'scroll', // Add this line
+                      cursor: cell.column.id === 'password' ? 'not-allowed' : 'pointer'
+                    }}
                   >
-                    {cell.render('Cell', {
-                      onInputChange: handleEditInputChange,
-                      onEscapeKeyDown: handleEscapeKeyDown
-                    })}
+                    {editingMode && ![typeId, 'sn'].includes(cell.column.id) ? (
+                      ['status'].includes(cell.column.id) ? (
+                        <CustomCheckbox
+                          value={cell.value}
+                          onChange={(newValue) => {
+                            const newChanges = [...changes]
+                            const changeIndex = newChanges.findIndex(
+                              (change) => change[typeId] === row.original[typeId]
+                            )
+                            if (changeIndex !== -1) {
+                              newChanges[changeIndex] = {
+                                ...newChanges[changeIndex],
+                                [cell.column.id]: newValue
+                              }
+                            } else {
+                              newChanges.push({
+                                [typeId]: row.original[typeId],
+                                [cell.column.id]: newValue
+                              })
+                            }
+                            setChanges(newChanges)
+                            console.log('Edit Changes fella', newChanges) // Log the changes to the console
+                          }}
+                        />
+                      ) : (
+                        <input
+                          style={{
+                            border: '1px solid white',
+                            borderRadius: 0,
+                            cursor: 'pointer'
+                          }}
+                          className="EmployeeTable__input--EditMode"
+                          type={
+                            cell.column.id === 'amount'
+                              ? 'number'
+                              : ['dateIssued', 'dateSettled'].includes(cell.column.id)
+                                ? 'date'
+                                : 'text'
+                          }
+                          defaultValue={cell.value}
+                          onChange={(e) => {
+                            const newChanges = [...changes]
+                            const changeIndex = newChanges.findIndex(
+                              (change) => change[typeId] === row.original[typeId]
+                            )
+                            if (changeIndex !== -1) {
+                              newChanges[changeIndex] = {
+                                ...newChanges[changeIndex],
+                                [cell.column.id]: e.target.value
+                              }
+                            } else {
+                              newChanges.push({
+                                [typeId]: row.original[typeId],
+                                [cell.column.id]: e.target.value
+                              })
+                            }
+                            setChanges(newChanges)
+                            console.log(newChanges) // Log the changes to the console
+                          }}
+                        />
+                      )
+                    ) : ['status'].includes(cell.column.id) ? (
+                      <span style={{ color: cell.value === 1 ? '#14b8a6' : 'hsl(0, 100%, 50%)' }}>
+                        {cell.value === 1 ? 'Yes' : 'No'}
+                      </span>
+                    ) : (
+                      cell.render('Cell')
+                    )}
                   </td>
                 ))}
               </tr>
@@ -359,18 +478,26 @@ const AdvancesTable = ({
           })}
         </tbody>
         <tfoot
-          className="AdvancesTable__tableFooter"
           style={{
-            background: '#55608f'
+            border: '2px solid white',
+            height: '49px',
+            position: 'relative'
           }}
         >
           {footerGroups.map((group) => (
-            <tr className="AdvancesTable__tableFooter--Row" {...group.getFooterGroupProps()}>
-              {group.headers.map((column) =>
-                column.Footer ? (
-                  <td {...column.getFooterProps()}>{column.render('Footer')}</td>
-                ) : null
-              )}
+            <tr {...group.getFooterGroupProps()}>
+              {group.headers.map((column) => (
+                <td
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    transform: 'translateX(-50%)'
+                  }}
+                  {...column.getFooterProps()}
+                >
+                  {column.render('Footer')}
+                </td>
+              ))}
             </tr>
           ))}
         </tfoot>

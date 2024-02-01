@@ -936,9 +936,9 @@ const electronAPI = {
     }
   },
 
-  printDocument: (leaseDetails) => {
+  printDocument: (leaseDetails, ownerFullName) => {
     console.log('lease details from preload', leaseDetails)
-    ipcRenderer.send('print-document', leaseDetails)
+    ipcRenderer.send('print-document', leaseDetails, ownerFullName)
   },
   openScanner: () => {
     console.log('log from openScanner preload')

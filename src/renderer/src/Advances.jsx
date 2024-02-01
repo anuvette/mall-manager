@@ -2,9 +2,10 @@ import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import useAuth from './customHooks/useAuth'
 import AdvancesTable from './AdvancesTable'
+import { toast } from 'react-toastify'
 
-const PayablesReceivables = () => {
-  const { token, userId, usernameInSession, roleInSession } = useAuth()
+const Advances = () => {
+  const { token, userId, usernameInSession } = useAuth()
   const queryClient = useQueryClient()
 
   const getAdvanceDetailsQuery = useQuery({
@@ -17,7 +18,10 @@ const PayablesReceivables = () => {
     mutationFn: (advanceData) =>
       window.electronAPI.addAdvanceDetails(token, usernameInSession, userId, advanceData),
     onSuccess: () => {
-      console.log('Advance details added successfully')
+      toast.success('Records Added Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['getAdvanceDetailsQuery'])
     }
   })
@@ -25,8 +29,11 @@ const PayablesReceivables = () => {
   const updateAdvanceDetailsMutation = useMutation({
     mutationFn: (advanceData) =>
       window.electronAPI.updateAdvanceDetails(token, usernameInSession, userId, advanceData),
-    onSuccess: (something) => {
-      console.log('Advance details updated successfully', something)
+    onSuccess: () => {
+      toast.success('Records Updated Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['getAdvanceDetailsQuery'])
     }
   })
@@ -35,7 +42,10 @@ const PayablesReceivables = () => {
     mutationFn: (advanceIds) =>
       window.electronAPI.deleteAdvanceDetails(token, usernameInSession, userId, advanceIds),
     onSuccess: () => {
-      console.log('Advance details deleted successfully')
+      toast.success('Records Deleted Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['getAdvanceDetailsQuery'])
     }
   })
@@ -65,10 +75,9 @@ const PayablesReceivables = () => {
           <AdvancesTable
             typeId="advanceId"
             data={getAdvanceDetailsQuery.data}
-            columns={advanceColumns}
-            insertFunction={addAdvanceDetailsMutation.mutate}
-            updateFunction={updateAdvanceDetailsMutation.mutate}
-            deleteFunction={deleteAdvanceDetailsMutation.mutate}
+            insertFunction={addAdvanceDetailsMutation}
+            updateFunction={updateAdvanceDetailsMutation}
+            deleteFunction={deleteAdvanceDetailsMutation}
           />
         )}
       </div>
@@ -76,222 +85,4 @@ const PayablesReceivables = () => {
   )
 }
 
-// HOISTING THE COLUMNS AND DATA
-
-const advanceColumns = [
-  {
-    Header: 'ID',
-    accessor: 'advanceId'
-  },
-  {
-    Header: 'SN',
-    accessor: 'sn',
-    Cell: ({ row }) => {
-      return <div>{row.index + 1}</div>
-    }
-  },
-  {
-    Header: 'Amount',
-    accessor: 'amount',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newAmount = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'advanceId' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            amount: newAmount
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          onEscapeKeyDown(inputValueRef, original.amount)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="number"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    }
-  },
-  {
-    Header: 'Recipient',
-    accessor: 'recipient',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newRecipient = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'advanceId' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            recipient: newRecipient
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          onEscapeKeyDown(inputValueRef, original.recipient)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="text"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    },
-    Footer: (info) => {
-      const total = React.useMemo(
-        () => info.rows.reduce((sum, row) => sum + parseFloat(row.values.amount || 0), 0),
-        [info.rows]
-      )
-      return <>Total: {total}</>
-    }
-  },
-  {
-    Header: 'Date Issued',
-    accessor: 'dateIssued',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newDate = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'advanceId' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            dateIssued: newDate
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          onEscapeKeyDown(inputValueRef, original.dateIssued)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="date"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    }
-  },
-  {
-    Header: 'Date Settled',
-    accessor: 'dateSettled',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const inputValueRef = React.useRef(value)
-
-      const handleInputChangeLocal = (e) => {
-        const newDate = e.target.value
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'advanceId' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            dateSettled: newDate
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (inputValueRef.current) {
-          onEscapeKeyDown(inputValueRef, original.dateSettled)
-        }
-      }, [original])
-
-      return (
-        <input
-          ref={inputValueRef}
-          type="date"
-          defaultValue={value}
-          onChange={handleInputChangeLocal}
-        />
-      )
-    }
-  },
-  {
-    Header: 'Status',
-    accessor: 'status',
-    Cell: ({ cell: { value }, row: { original }, onInputChange, onEscapeKeyDown }) => {
-      const [isChecked, setIsChecked] = React.useState(value === 1)
-
-      const handleCheckboxChange = () => {
-        const newStatus = isChecked ? 0 : 1
-        setIsChecked(!isChecked)
-        const nullifiedOriginal = Object.fromEntries(
-          Object.keys(original).map((key) =>
-            key === 'advanceId' ? [key, original[key]] : [key, null]
-          )
-        )
-        onInputChange(
-          {
-            ...nullifiedOriginal,
-            status: newStatus
-          },
-          original
-        )
-      }
-
-      React.useLayoutEffect(() => {
-        if (isChecked !== null) {
-          onEscapeKeyDown(setIsChecked, original.status)
-        }
-      }, [original])
-
-      return (
-        <label>
-          <input type="checkbox" checked={isChecked} onChange={handleCheckboxChange} />
-          <p
-            style={{
-              color: isChecked ? '#14b8a6' : 'hsl(0, 100%, 50%)'
-            }}
-          >
-            {isChecked ? 'Settled' : 'Unsettled'}
-          </p>
-        </label>
-      )
-    }
-  }
-]
-
-export default PayablesReceivables
+export default Advances

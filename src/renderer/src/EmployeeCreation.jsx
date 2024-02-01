@@ -18,7 +18,6 @@ const EmployeeCreation = () => {
     mutationFn: (userData) =>
       window.electronAPI.addUserDetails(token, usernameInSession, userId, userData),
     onSuccess: () => {
-      console.log('User details added successfully')
       toast.success('User details added successfully', {
         autoClose: 2000,
         onClick: () => toast.dismiss()
@@ -31,7 +30,6 @@ const EmployeeCreation = () => {
     mutationFn: (userData) =>
       window.electronAPI.updateUserDetails(token, usernameInSession, userId, userData),
     onSuccess: (something) => {
-      console.log('User details updated successfully', something)
       toast.success('User details updated successfully', {
         autoClose: 2000,
         onClick: () => toast.dismiss()
@@ -44,7 +42,6 @@ const EmployeeCreation = () => {
     mutationFn: (userData) =>
       window.electronAPI.deleteUserDetails(token, usernameInSession, userId, userData),
     onSuccess: () => {
-      console.log('User details deleted successfully')
       toast.success('User details deleted successfully', {
         autoClose: 2000,
         onClick: () => toast.dismiss()
