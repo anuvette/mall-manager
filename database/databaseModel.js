@@ -58,8 +58,8 @@ function createUserTable() {
     password TEXT NOT NULL,
     firstName TEXT,
     lastName TEXT,
-    contact INTEGER CHECK (typeof(contact) = 'integer'),
-    secondaryContact INTEGER CHECK (typeof(secondaryContact) = 'integer'),
+    contact INTEGER,
+    secondaryContact INTEGER,
     base_salary TEXT,
     bonus TEXT,
     incentives TEXT,
@@ -601,10 +601,8 @@ function getLeaseDetailsUsernameQuery(username) {
     db.all(query, [username], (err, rows) => {
       if (err) {
         reject(new Error(err.message))
-      } else if (!rows || rows.length === 0) {
-        reject(new Error('No lease found for the given username')) // Reject instead of resolve
       } else {
-        // console.log('rows from dbmodel.js', rows, rows.length)
+        console.log('rows from dbmodel.js', rows, rows.length)
         resolve({ details: rows, count: rows.length })
       }
     })
@@ -1120,12 +1118,15 @@ function deleteBuildingImageTableDetailsQuery(buildingImageData) {
 }
 
 function getTaxManagerSpaceImageDetailsQuery(usernameInSession) {
+  console.log('gay')
   return new Promise((resolve, reject) => {
     const sql = `SELECT * FROM taxmanager_space_image_details WHERE username = ?`
     db.all(sql, [usernameInSession], (err, rows) => {
       if (err) {
+        console.log('error', err.message)
         reject(err)
       } else {
+        console.log('rows', rows)
         resolve(rows)
       }
     })

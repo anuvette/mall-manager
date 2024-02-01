@@ -55,7 +55,11 @@ const TaxComponent = () => {
 
   const leaseQuery = useQuery({
     queryKey: ['taxLeaseData'],
-    queryFn: () => window.electronAPI.getLeaseDetailsUserName(token, usernameInSession)
+    queryFn: () =>
+      window.electronAPI.getLeaseDetailsUserName(token, usernameInSession).then((result) => {
+        console.log(result) // Log the result
+        return result
+      })
     // refetchOnWindowFocus: false,
   })
 
@@ -73,12 +77,17 @@ const TaxComponent = () => {
 
   const getTaxManagerImageDetailsQuery = useQuery({
     queryKey: ['taxManagerImageData'],
-    queryFn: () =>
-      window.electronAPI.getTaxManagerImageDetails(
-        token,
-        usernameInSession,
-        leaseQuery.data.details[0].leaseId
-      ),
+    queryFn: () => {
+      if (leaseQuery.data.details[0]) {
+        return window.electronAPI.getTaxManagerImageDetails(
+          token,
+          usernameInSession,
+          leaseQuery.data.details[0].leaseId
+        )
+      } else {
+        return []
+      }
+    },
     enabled: leaseQuery.isSuccess
     // refetchOnWindowFocus: false,
   })
@@ -105,14 +114,15 @@ const TaxComponent = () => {
 
         <div className="tax-container">
           <div className="Property-Photo-Grid-Area-Provider">
-            {leaseQuery.isSuccess && getTaxManagerImageDetailsQuery.isSuccess ? (
+            {getTaxManagerImageDetailsQuery.isSuccess &&
+            getTaxManagerImageDetailsQuery.data.length !== 0 ? (
               <CustomImageCarousel
                 queryKey={['taxManagerImageData']}
                 imageDetails={getTaxManagerImageDetailsQuery.data}
               />
             ) : (
               <div style={{ border: '1px solid white', borderRadius: '10px', height: '100%' }}>
-                <h2 style={{ padding: '20px' }}>An Error Occured...</h2>
+                <h2 style={{ padding: '20px' }}>Contact admin to access this feature</h2>
               </div>
             )}
           </div>

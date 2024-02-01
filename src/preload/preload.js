@@ -445,7 +445,7 @@ const electronAPI = {
   },
 
   getTaxManagerImageDetails: async (token, usernameInSession, leaseId) => {
-    //console.log('usernameInSession from preload', usernameInSession, token, leaseId)
+    console.log('usernameInSession from preload', usernameInSession, token, leaseId)
     try {
       const response = await ipcRenderer.invoke(
         'get-tax-manager-image-details',

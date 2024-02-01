@@ -100,9 +100,9 @@ const CustomTextCarousel = ({ header, textCount, textDetails, warningColor, butt
                 onClick={() => {
                   // Handle default text upload here (if needed)
                 }}
+                disabled={buttonStatus === 'disabled'}
               >
                 &#43; {/* This is the "add" button */}
-                disabled={buttonStatus === 'disabled'}
               </button>
             </div>
           </div>
