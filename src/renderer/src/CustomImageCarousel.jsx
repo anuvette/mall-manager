@@ -1,11 +1,12 @@
 import './assets/CustomImageCarousel.css'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { HashLink } from 'react-router-hash-link'
 import useAuth from './customHooks/useAuth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 const CustomImageCarousel = ({ queryKey, imageDetails }) => {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
-  const { token, usernameInSession, userId } = useAuth()
+  const { token, usernameInSession } = useAuth()
   const queryClient = useQueryClient()
 
   const handleActiveSlideIndexChange = (newIndex) => {
@@ -155,8 +156,9 @@ const CustomImageCarousel = ({ queryKey, imageDetails }) => {
       {imageDetails.length > 1 && (
         <div className="CustomCarouselNav">
           {imageDetails.map((imageDetail, i) => (
-            <a
-              href={`#imageDetail-${i}`}
+            <HashLink
+              smooth
+              to={`#imageDetail-${i}`}
               key={i}
               style={
                 activeSlideIndex === i
@@ -171,7 +173,7 @@ const CustomImageCarousel = ({ queryKey, imageDetails }) => {
                 //DONT PUT PREVENT DEFAULT HERE IT WILL BREAK THE  ONCLICK NAVIGATION SCROLLING
                 handleActiveSlideIndexChange(i)
               }}
-            ></a>
+            ></HashLink>
           ))}
         </div>
       )}

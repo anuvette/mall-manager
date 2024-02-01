@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
+import { HashLink } from 'react-router-hash-link'
 import './assets/CustomTextCarousel.css'
 
-const CustomTextCarousel = ({ header, textCount, textDetails, warningColor }) => {
+const CustomTextCarousel = ({ header, textCount, textDetails, warningColor, buttonStatus }) => {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
 
   const handleActiveSlideIndexChange = (newIndex) => {
@@ -42,26 +43,41 @@ const CustomTextCarousel = ({ header, textCount, textDetails, warningColor }) =>
               </div>
               <div className="CustomTextCarousel__ButtonContainer">
                 <button
-                  style={{ fontSize: '4rem', color: 'white' }}
+                  style={{
+                    fontSize: '4rem',
+                    color: 'white',
+                    cursor: buttonStatus === 'disabled' ? 'not-allowed' : 'pointer'
+                  }}
                   onClick={() => {
                     // Handle text upload here (if needed)
                   }}
+                  disabled={buttonStatus === 'disabled'}
                 >
                   &#43; {/* This is the "add" button */}
                 </button>
                 <button
-                  style={{ fontSize: '3rem', color: 'white' }}
+                  style={{
+                    fontSize: '3rem',
+                    color: 'white',
+                    cursor: buttonStatus === 'disabled' ? 'not-allowed' : 'pointer'
+                  }}
                   onClick={() => {
                     // Handle text edit here (if needed)
                   }}
+                  disabled={buttonStatus === 'disabled'}
                 >
                   &#x270E; {/* This is the "edit" button */}
                 </button>
                 <button
-                  style={{ fontSize: '3rem', color: 'red' }}
+                  style={{
+                    fontSize: '3rem',
+                    color: 'red',
+                    cursor: buttonStatus === 'disabled' ? 'not-allowed' : 'pointer'
+                  }}
                   onClick={() => {
                     // Handle text delete here (if needed)
                   }}
+                  disabled={buttonStatus === 'disabled'}
                 >
                   &#x1F5D1; {/* This is the "delete" button */}
                 </button>
@@ -76,12 +92,17 @@ const CustomTextCarousel = ({ header, textCount, textDetails, warningColor }) =>
             </div>
             <div className="CustomTextCarousel__ButtonContainer">
               <button
-                style={{ fontSize: '4rem', color: 'white' }}
+                style={{
+                  fontSize: '4rem',
+                  color: 'white',
+                  cursor: buttonStatus === 'disabled' ? 'not-allowed' : 'pointer'
+                }}
                 onClick={() => {
                   // Handle default text upload here (if needed)
                 }}
               >
                 &#43; {/* This is the "add" button */}
+                disabled={buttonStatus === 'disabled'}
               </button>
             </div>
           </div>
@@ -90,8 +111,9 @@ const CustomTextCarousel = ({ header, textCount, textDetails, warningColor }) =>
       {(Array.isArray(textDetails) ? textDetails.length : 1) > 1 && (
         <div className="CustomTextCarousel__Nav">
           {(Array.isArray(textDetails) ? textDetails : [textDetails]).map((textDetail, i) => (
-            <a
-              href={`#textDetail-${i}`}
+            <HashLink
+              smooth
+              to={`#textDetail-${i}`}
               key={i}
               style={
                 activeSlideIndex === i
@@ -105,7 +127,7 @@ const CustomTextCarousel = ({ header, textCount, textDetails, warningColor }) =>
               onClick={(event) => {
                 handleActiveSlideIndexChange(i)
               }}
-            ></a>
+            ></HashLink>
           ))}
         </div>
       )}

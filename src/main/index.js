@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import os from 'os'
-import { join } from 'path'
+import { log } from 'electron-log'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 const jwt = require('jsonwebtoken')
@@ -20,7 +20,7 @@ let mainWindow
 let mainToken = null
 let pdfViewerWindow = null
 function pdfProcessor(leaseDetails, ownerFullName) {
-  console.log('leasedeails', leaseDetails)
+  // console.log('leasedeails', leaseDetails)
   const diffInMonths =
     (new Date(leaseDetails.dateOfExpiry).getFullYear() -
       new Date(leaseDetails.dateOfEffect).getFullYear()) *
@@ -221,7 +221,7 @@ function createWindow() {
     }
   })
 
-  console.log(path.join(app.getAppPath(), 'src', 'preload', 'preload.js'))
+  // console.log(path.join(app.getAppPath(), 'src', 'preload', 'preload.js'))
 
   mainWindow.maximize()
   mainWindow.setMenu(null)
@@ -277,22 +277,22 @@ function createWindow() {
           if (err) {
             return console.error(err.message)
           }
-          console.log('Closed the database connection.')
+          // console.log('Closed the database connection.')
         })
 
         try {
           fsExtra.copyFileSync(dbFilePaths[0], dbQueries.dbPath)
-          console.log('File copied successfully')
+          // console.log('File copied successfully')
         } catch (error) {
-          console.error(`Failed to copy file: ${error}`)
+          log.info(`Failed to copy file: ${error}`)
         }
 
         // Overwrite the resources folder
         try {
           fsExtra.copySync(resourcesFilePaths[0], path.join(os.homedir(), 'myPhotos'))
-          console.log('Resources copied successfully')
+          // console.log('Resources copied successfully')
         } catch (error) {
-          console.error(`Failed to copy resources: ${error}`)
+          // console.error(`Failed to copy resources: ${error}`)
         }
 
         dialog.showMessageBox({
@@ -366,7 +366,7 @@ app.whenReady().then(() => {
     const formattedDate = date.replace(regex, 'IMG_$2_$3_$1_$4$5$6')
     fileName = `${formattedDate}${extension}`
     const destinationPath = path.join(photosDir, fileName)
-    console.log('Destination Path', destinationPath)
+    // console.log('Destination Path', destinationPath)
 
     // Use fs.copyFile to copy the file to the desired location
     fs.copyFile(photoPath, destinationPath, (err) => {
@@ -555,7 +555,6 @@ app.whenReady().then(() => {
             photoPath: spaceData.photoPath
           })
           .then((response) => {
-            console.log(response.data)
             // Modify spaceData.photoPath to just the filename
             const fileName = response.data.fileName
             spaceData.photoPath = fileName
@@ -595,7 +594,6 @@ app.whenReady().then(() => {
   ipcMain.handle('get-lease-table-details', async (event) => {
     try {
       const result = await dbQueries.getAllLeaseDetailsQuery()
-      // console.log("LINE 260", result);
       return result
     } catch (error) {
       console.error('Error getting lease table details:', error)
@@ -651,7 +649,6 @@ app.whenReady().then(() => {
             photoPath: passportPhoto.photoPath
           })
           .then((response) => {
-            console.log(response.data)
             // Modify passportPhoto.photoPath to just the filename
             const fileName = response.data.fileName
             passportPhoto.photoPath = fileName
@@ -686,7 +683,6 @@ app.whenReady().then(() => {
             photoPath: citizenPhoto.photoPath
           })
           .then((response) => {
-            console.log(response.data)
             // Modify citizenPhoto.photoPath to just the filename
             const fileName = response.data.fileName
             citizenPhoto.photoPath = fileName
@@ -721,7 +717,6 @@ app.whenReady().then(() => {
             photoPath: PANPhoto.photoPath
           })
           .then((response) => {
-            console.log(response.data)
             // Modify PANPhoto.photoPath to just the filename
             const fileName = response.data.fileName
             PANPhoto.photoPath = fileName
@@ -848,7 +843,6 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('add-building-image-details', async (event, buildingImageData) => {
-    console.log('line 566 from index', buildingImageData)
     try {
       if (buildingImageData.imagePath && buildingImageData.imagePath !== null) {
         const response = await axios.post('http://localhost:3000/uploadImage', {
@@ -859,28 +853,27 @@ app.whenReady().then(() => {
         // Modify buildingImageData.photoPath to just the filename
         const fileName = response.data.fileName
         buildingImageData.imagePath = fileName
-        console.log('line 567 from index', buildingImageData.imagePath)
-      }
 
-      try {
-        const result = await dbQueries.addBuildingImageTableDetailsQuery(buildingImageData)
-        return result
-      } catch (error) {
-        // console.error('Error adding building image data:', error)
-        console.error('Error adding building image data:')
+        try {
+          const result = await dbQueries.addBuildingImageTableDetailsQuery(buildingImageData)
+          return result
+        } catch (error) {
+          // console.error('Error adding building image data:', error)
+          console.error('Error adding building image data:')
 
-        // Delete the image if the query fails
-        if (buildingImageData.imagePath) {
-          const deleteImagePath = path.join(photosDir, buildingImageData.imagePath)
+          // Delete the image if the query fails
+          if (buildingImageData.imagePath) {
+            const deleteImagePath = path.join(photosDir, buildingImageData.imagePath)
 
-          fs.unlink(deleteImagePath, (err) => {
-            if (err) {
-              console.error('Error deleting image:')
-              // console.error('Error deleting image:', err)
-            } else {
-              console.log('Successfully deleted image')
-            }
-          })
+            fs.unlink(deleteImagePath, (err) => {
+              if (err) {
+                console.error('Error deleting image:')
+                // console.error('Error deleting image:', err)
+              } else {
+                console.log('Successfully deleted image')
+              }
+            })
+          }
         }
       }
     } catch (error) {
@@ -909,7 +902,6 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('update-building-image-details', async (event, buildingImageData) => {
-    console.log('buildingImageData', buildingImageData)
     try {
       if (buildingImageData.imagePath && buildingImageData.imagePath !== null) {
         await axios
@@ -917,7 +909,6 @@ app.whenReady().then(() => {
             photoPath: buildingImageData.imagePath
           })
           .then((response) => {
-            console.log(response.data)
             // Modify buildingImageData.imagePath to just the filename
             const fileName = response.data.fileName
             buildingImageData.imagePath = fileName
@@ -1014,7 +1005,7 @@ app.whenReady().then(() => {
   ipcMain.handle(
     'add-tax-manager-image-details',
     async (event, token, usernameInSession, taxManagerImageData) => {
-      console.log('Token before verification:', token, usernameInSession, taxManagerImageData)
+      // console.log('Token before verification:', token, usernameInSession, taxManagerImageData)
       // console.log('taxManagerImageData from main', taxManagerImageData)
       try {
         const decoded = jwt.verify(token, secretKey)
@@ -1063,7 +1054,7 @@ app.whenReady().then(() => {
   ipcMain.handle(
     'update-tax-manager-image-details',
     async (event, token, usernameInSession, taxManagerImageData) => {
-      console.log('Token before verification:', token, usernameInSession, taxManagerImageData)
+      // console.log('Token before verification:', token, usernameInSession, taxManagerImageData)
       // console.log('taxManagerImageData from main', taxManagerImageData)
       try {
         const decoded = jwt.verify(token, secretKey)
@@ -1648,7 +1639,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('export-backup', async (event, token, usernameInSession, backupFolderPath) => {
-    console.log('backupFilePath from main', backupFolderPath)
+    // console.log('backupFilePath from main', backupFolderPath)
     try {
       const decoded = jwt.verify(token, secretKey)
       if (decoded.username === usernameInSession) {

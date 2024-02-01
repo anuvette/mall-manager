@@ -1,5 +1,6 @@
 import './assets/Building.css'
 import { useState, useEffect, useMemo } from 'react'
+import { HashLink } from 'react-router-hash-link'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 
@@ -417,8 +418,9 @@ const Building = () => {
             </div>
             <div className="Building-Carousel-Nav">
               {memoizedBuildingImageData.imageDetails.map((imageDetail, i) => (
-                <a
-                  href={`#slide-${i + 1}`}
+                <HashLink
+                  smooth
+                  to={`#slide-${i + 1}`}
                   key={i}
                   style={
                     activeSlideIndex === i
@@ -432,7 +434,7 @@ const Building = () => {
                   onClick={(event) => {
                     handleActiveSlideIndexChange(i)
                   }}
-                ></a>
+                ></HashLink>
               ))}
             </div>
           </div>

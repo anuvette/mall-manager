@@ -1,7 +1,6 @@
 import './assets/TaxComponent.css'
 import CustomImageCarousel from './CustomImageCarousel'
 import CustomTextCarousel from './CustomTextCarousel'
-import { useMemo } from 'react'
 import useAuth from './customHooks/useAuth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -92,8 +91,6 @@ const TaxComponent = () => {
     ? getExpenditureQuery.data.reduce((sum, row) => sum + parseFloat(row.expenditure_amount), 0)
     : 0
 
-  console.log('are u working', leaseQuery.data)
-
   return (
     <>
       <div
@@ -152,6 +149,7 @@ const TaxComponent = () => {
                       ? '#FF4081'
                       : 'white'
                 }
+                buttonStatus="disabled"
               />
             )}
           </div>
@@ -164,6 +162,7 @@ const TaxComponent = () => {
                 totalExpenditure: `Rs. ${totalExpenditure}`
               }}
               warningColor="white"
+              buttonStatus="disabled"
             />
           </div>
 
@@ -172,6 +171,7 @@ const TaxComponent = () => {
               header="Tax Details"
               textDetails={[taxCalc(totalIncome, totalExpenditure)]}
               warningColor="white"
+              buttonStatus="disabled"
             />
           </div>
 
@@ -180,6 +180,7 @@ const TaxComponent = () => {
               header="Reports"
               textDetails={{ 'N/A': 'Feature under development. Stay tuned for updates.' }}
               warningColor="white"
+              buttonStatus="disabled"
             />
           </div>
         </div>

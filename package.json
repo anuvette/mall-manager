@@ -29,6 +29,7 @@
     "jsonwebtoken": "^9.0.2",
     "pdfkit": "^0.14.0",
     "react-router-dom": "^6.19.0",
+    "react-router-hash-link": "^2.4.3",
     "react-table": "^7.8.0",
     "react-toastify": "^10.0.4",
     "sonner": "^1.4.0",
