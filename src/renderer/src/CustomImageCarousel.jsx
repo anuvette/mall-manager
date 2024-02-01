@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { HashLink } from 'react-router-hash-link'
 import useAuth from './customHooks/useAuth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 
 const CustomImageCarousel = ({ queryKey, imageDetails }) => {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
@@ -33,7 +34,10 @@ const CustomImageCarousel = ({ queryKey, imageDetails }) => {
       return window.electronAPI.addTaxManagerImageDetails(token, usernameInSession, imageData)
     },
     onSuccess: () => {
-      //console.log("Lease added successfully");
+      toast.success('Image Added Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries([`${queryKey}`])
     }
   })
@@ -42,7 +46,10 @@ const CustomImageCarousel = ({ queryKey, imageDetails }) => {
     mutationFn: ({ token, usernameInSession, imageData }) =>
       window.electronAPI.updateTaxManagerImageDetails(token, usernameInSession, imageData),
     onSuccess: () => {
-      //console.log("Lease added successfully");
+      toast.success('Image Updated Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries([`${queryKey}`])
     }
   })
@@ -51,7 +58,10 @@ const CustomImageCarousel = ({ queryKey, imageDetails }) => {
     mutationFn: ({ token, usernameInSession, spaceImageId }) =>
       window.electronAPI.deleteTaxManagerImageDetails(token, usernameInSession, spaceImageId),
     onSuccess: () => {
-      console.log('Image Deleted successfully')
+      toast.success('Image Deleted Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries([`${queryKey}`])
     }
   })

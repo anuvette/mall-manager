@@ -33,24 +33,58 @@ function Lease() {
   const addLeaseMutation = useMutation({
     mutationFn: (leaseData) => window.electronAPI.addNewLease(leaseData),
     onSuccess: () => {
-      //console.log("Lease added successfully");
+      toast.success('Records Added Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['leaseData'])
+    },
+    onError: (error) => {
+      if (error.message.includes('UNIQUE constraint failed')) {
+        toast.error('A lease with the same space renting and floor number already exists.', {
+          autoClose: 3000,
+          onClick: () => toast.dismiss()
+        })
+      } else {
+        toast.error(`Unexpected Error Occured: ${error.message}`, {
+          autoClose: 3000,
+          onClick: () => toast.dismiss()
+        })
+      }
     }
   })
 
   const editLeaseMutation = useMutation({
     mutationFn: (leaseData) => window.electronAPI.editExistingLease(leaseData),
     onSuccess: () => {
-      console.log('Lease edited successfully')
+      toast.success('Records Updated Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['leaseData'])
+    },
+    onError: (error) => {
+      toast.error(`Unexpected Error Occured: ${error.message}`, {
+        autoClose: 3000,
+        onClick: () => toast.dismiss()
+      })
     }
   })
 
   const deleteLeaseMutation = useMutation({
     mutationFn: (leaseId) => window.electronAPI.deleteLease(leaseId),
     onSuccess: () => {
-      console.log('Lease deleted successfully')
+      toast.success('Records Deleted Successfully', {
+        autoClose: 2000,
+        onClick: () => toast.dismiss()
+      })
       queryClient.invalidateQueries(['leaseData'])
+    },
+    onError: (error) => {
+      toast.error(`Unexpected Error Occured: ${error.message}`, {
+        autoClose: 3000,
+        onClick: () => toast.dismiss()
+      })
     }
   })
 

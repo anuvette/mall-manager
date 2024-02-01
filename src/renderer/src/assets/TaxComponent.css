@@ -16,6 +16,8 @@
 
 .Property-Photo-Grid-Area-Provider {
   grid-area: Propery-Photo;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .Propery-Photo {
