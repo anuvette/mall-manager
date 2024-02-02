@@ -76,7 +76,11 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
       },
       {
         Header: 'Password',
-        accessor: 'password'
+        accessor: 'password',
+        Cell: ({ value }) => {
+          const isBcrypt = /^\$2[abyx]?\$/.test(value)
+          return <div>{isBcrypt ? '••••••' : value.substring(0, 6)}</div> //decided to hide the hashedd passwords
+        }
       },
       {
         Header: 'Contact',
@@ -417,7 +421,7 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
                     style={{
                       padding: editingMode ? '0px' : '10px',
                       maxWidth: '100px',
-                      overflow: 'scroll', // Add this line
+                      overflow: 'hidden',
                       cursor: cell.column.id === 'password' ? 'not-allowed' : 'pointer'
                     }}
                   >
@@ -453,7 +457,11 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
                             cursor: 'pointer'
                           }}
                           className="EmployeeTable__input--EditMode"
-                          type="text"
+                          type={
+                            ['contact', 'secondaryContact'].includes(cell.column.id)
+                              ? 'number'
+                              : 'text'
+                          }
                           defaultValue={cell.value}
                           onChange={(e) => {
                             const newChanges = [...changes]

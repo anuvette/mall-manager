@@ -32,12 +32,17 @@ const CustomTextCarousel = ({ header, textCount, textDetails, warningColor, butt
           (Array.isArray(textDetails) ? textDetails : [textDetails]).map((textDetail, i) => (
             <div className="CustomTextCarousel__Slide" id={`textDetail-${i}`} key={i}>
               <div className="CustomTextCarousel__Content">
-                <h1 style={{ color: warningColor }}>{header}</h1>
+                <h1 style={{ color: warningColor, textDecoration: 'underline' }}>{header}</h1>
                 {Object.entries(textDetail).map(([key, value]) => (
-                  <p key={key}>
-                    {key.replace(/^./, key[0].toUpperCase()).replace(/([a-z\s])([A-Z])/g, '$1 $2')}:{' '}
-                    {value}
-                  </p>
+                  <div style={{ display: 'flex' }} key={key}>
+                    <h4 style={{ color: 'hsl(0, 0%, 75%)' }}>
+                      {key
+                        .replace(/^./, key[0].toUpperCase())
+                        .replace(/([a-z\s])([A-Z])/g, '$1 $2')}
+                      :&nbsp;
+                    </h4>
+                    <p>{value}</p>
+                  </div>
                 ))}
                 {/* Add more paragraphs as needed */}
               </div>

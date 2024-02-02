@@ -537,8 +537,6 @@ function editExistingLeaseQuery(leaseData) {
       return
     }
 
-    // console.log('226 from dbmodel.js', leaseData)
-
     const query = `
       UPDATE lease_details SET
         firstName = ?, lastName = ?, contact = ?, emergencyContact = ?, dateOfEffect = ?, dateOfExpiry = ?,
@@ -1118,7 +1116,6 @@ function deleteBuildingImageTableDetailsQuery(buildingImageData) {
 }
 
 function getTaxManagerSpaceImageDetailsQuery(usernameInSession) {
-  console.log('gay')
   return new Promise((resolve, reject) => {
     const sql = `SELECT * FROM taxmanager_space_image_details WHERE username = ?`
     db.all(sql, [usernameInSession], (err, rows) => {

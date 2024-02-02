@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import './assets/Home.css'
 import useAuth from './customHooks/useAuth'
+import { motion } from 'framer-motion'
 
 const Accordion = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -132,7 +133,7 @@ const Home = () => {
           {(roleInSession === 'superuser' || roleInSession === 'admin') && (
             <Accordion title="Admin">
               <button onClick={() => navigate('/Home/lease')}>Lease</button>
-              <button onClick={() => navigate('/Home/tax')}>Tax Management</button>
+              <button onClick={() => navigate('/Home/tax')}>Tax Overview</button>
               <button onClick={() => navigate('/Home/employee-user')}>Employee/User</button>
               <button onClick={() => navigate('/Home/backup')}>Backup</button>
             </Accordion>
@@ -164,12 +165,6 @@ const Home = () => {
             </Accordion>
           )}
 
-          {/* <Accordion title="User">
-            <button onClick={() => navigate('/Home/super-admin')}>Super Admin</button>
-            <button onClick={() => navigate('/Home/admin-employee')}>Admin or employee</button>
-            <button onClick={() => navigate('/Home/account-officials')}>Account Officials</button>
-          </Accordion> */}
-
           <Accordion title="My Account">
             <button onClick={() => navigate('/Home/settings')}>Settings</button>
             <button onClick={() => navigate('/Home/test')}>Test</button>
@@ -195,12 +190,19 @@ const Home = () => {
       </div>
       <div className="content">
         {isHomePage && (
-          <div className="last-visited">
+          <motion.div
+            initial={{ y: '-100vh' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100vh' }}
+            transition={{ duration: 0.5 }}
+            div
+            className="last-visited"
+          >
             <h1>Welcome to Mall Manager!</h1>
             <button type="button" onClick={() => navigate(lastVisited)} disabled={!lastVisited}>
               Last Visited
             </button>
-          </div>
+          </motion.div>
         )}
         <Outlet />
       </div>

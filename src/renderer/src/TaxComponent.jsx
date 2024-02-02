@@ -3,6 +3,7 @@ import CustomImageCarousel from './CustomImageCarousel'
 import CustomTextCarousel from './CustomTextCarousel'
 import useAuth from './customHooks/useAuth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 
 const taxCalc = (income, expenditure) => {
   // Tax slabs for individual and married
@@ -57,7 +58,7 @@ const TaxComponent = () => {
     queryKey: ['taxLeaseData'],
     queryFn: () =>
       window.electronAPI.getLeaseDetailsUserName(token, usernameInSession).then((result) => {
-        console.log(result) // Log the result
+        console.log('taxLeaseData query Key', result) // Log the result
         return result
       })
     // refetchOnWindowFocus: false,
@@ -114,16 +115,19 @@ const TaxComponent = () => {
 
         <div className="tax-container">
           <div className="Property-Photo-Grid-Area-Provider">
-            {getTaxManagerImageDetailsQuery.isSuccess &&
-            getTaxManagerImageDetailsQuery.data.length !== 0 ? (
+            {!leaseQuery.data || leaseQuery.data.details.length === 0 ? (
+              <div style={{ border: '1px solid white', borderRadius: '10px', height: '100%' }}>
+                <h2 style={{ padding: '20px' }}>
+                  <Link to="/Home/lease" style={{ color: 'white' }}>
+                    Please Add Lease Details!
+                  </Link>
+                </h2>
+              </div>
+            ) : (
               <CustomImageCarousel
                 queryKey={['taxManagerImageData']}
-                imageDetails={getTaxManagerImageDetailsQuery.data}
+                imageDetails={getTaxManagerImageDetailsQuery.data || []}
               />
-            ) : (
-              <div style={{ border: '1px solid white', borderRadius: '10px', height: '100%' }}>
-                <h2 style={{ padding: '20px' }}>Contact admin to access this feature</h2>
-              </div>
             )}
           </div>
 
@@ -135,7 +139,9 @@ const TaxComponent = () => {
             )}
             {leaseQuery.isError && (
               <div style={{ border: '1px solid white', borderRadius: '20px', height: '100%' }}>
-                <h2 style={{ padding: '20px' }}>Ask Admin to submit your lease details!</h2>
+                <h2 style={{ padding: '20px', color: 'white' }}>
+                  Error: {leaseQuery.error.message}
+                </h2>
               </div>
             )}
             {!leaseQuery.isLoading && !leaseQuery.isError && (
@@ -188,7 +194,7 @@ const TaxComponent = () => {
           <div style={{ gridArea: 'Reports', minWidth: '100%' }}>
             <CustomTextCarousel
               header="Reports"
-              textDetails={{ 'N/A': 'Feature under development. Stay tuned for updates.' }}
+              textDetails={{ Nothing: 'Stay tuned!' }}
               warningColor="white"
               buttonStatus="disabled"
             />
