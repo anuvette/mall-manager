@@ -108,7 +108,7 @@
 }
 
 .BackupCard__footer--h1 {
-  /* Add your styles here */
+  visibility: visible;
 }
 
 .BackupCard__footer.shrunk {
