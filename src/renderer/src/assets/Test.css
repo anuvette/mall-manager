@@ -1,76 +1,43 @@
-.pettyCashAccount {
-  width: 100%;
+.UserManual {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.UserManual__title {
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.UserManual__content {
+  text-align: left;
+  padding: 30px;
+  height: 100%;
+  /* border: 1px solid white; */
   overflow: scroll;
 }
 
-.pettyCashAccount__button {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 20px;
-  box-sizing: border-box;
-  overflow: hidden;
-  /* border: 2px solid white; */
-}
-
-.pettyCashAccount__button button {
-  box-sizing: border-box;
-
+.UserManual__content a {
   color: white;
-  background-color: transparent;
-  font-size: 50px;
-  padding: 0px;
-  margin: 0;
+  text-shadow: 0 0 4px white;
 }
 
-.pettyCashAccount__title {
-}
-
-.pettyCashAccount__table {
-  height: 50px;
-}
-
-.pettyCashAccount__table input {
-  background-color: transparent;
+.UserManual__content h2 {
   color: white;
-  width: 100%;
-  margin: 0;
-  text-align: center;
-  /* outline: 2px solid white; */
+  margin-top: 20px;
 }
 
-.pettyCashAccount__table input::-webkit-calendar-picker-indicator {
-  background-color: transparent;
-  filter: invert(1);
-}
-
-.newRow input {
-  background-color: transparent;
+.UserManual__content p {
   color: white;
-  border-radius: 0px;
-  border: 1px solid white;
+  line-height: 1.6;
 }
 
-.pettyCashAccount__table input:focus {
-  border-radius: 0;
-  outline: 2px solid orange;
+.UserManual__content ol {
+  margin-left: 20px;
 }
 
-.pettyCashAccount__tableHeader {
-}
-
-.pettyCashAccount__tableRow {
-  padding: 0;
-  margin: 0;
-}
-
-.pettyCashAccount__tableHeaderCell {
-}
-
-.pettyCashAccount__tableBody {
-}
-
-.pettyCashAccount__tableCell {
-  padding: 1px;
+.UserManual__content ol li {
+  margin-bottom: 10px;
 }

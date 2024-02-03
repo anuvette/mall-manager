@@ -167,7 +167,7 @@ const Home = () => {
 
           <Accordion title="My Account">
             <button onClick={() => navigate('/Home/settings')}>Settings</button>
-            <button onClick={() => navigate('/Home/test')}>Test</button>
+            <button onClick={() => navigate('/Home/help')}>Help</button>
           </Accordion>
         </div>
         <div className="logout">

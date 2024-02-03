@@ -1,6 +1,9 @@
 .backup {
   width: 100%;
-  /* border: 2px solid orange; */
+  height: 100%;
+  display: flex;
+  padding: 20px;
+  flex-direction: column;
 }
 
 .backup__title p {
@@ -9,8 +12,12 @@
 
 .backup__actions {
   display: flex;
-  justify-content: flex-start;
-  gap: 20px;
+  justify-content: space-around;
+  height: 100%;
+  width: 100%;
+  padding: 5% 18%;
+  gap: 50px;
+  /* border: 1px solid red; */
 }
 
 .backup__button {
@@ -19,12 +26,6 @@
   border-radius: 0;
   color: white;
 }
-
-/* .backup__modal--container {
-  border: 20px solid red;
-  width: 100%;
-  position: absolute;
-} */
 
 .backup__modal {
   top: 50%;
@@ -75,4 +76,42 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+.BackupCard {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  box-sizing: content-box;
+  grid-template-areas: 'content';
+  border: 2px solid white;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.BackupCard__header {
+  grid-area: content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.BackupCard__footer {
+  grid-area: content;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  transition: 0.5s ease;
+  align-self: end;
+}
+
+.BackupCard__footer--h1 {
+  /* Add your styles here */
+}
+
+.BackupCard__footer.shrunk {
+  height: 10%;
+  transition: height 0.5s;
 }

@@ -4,11 +4,9 @@ import './assets/Test.css'
 
 const Test = () => {
   return (
-    <div className="pettyCashAccount">
-      <h1 className="pettyCashAccount__title" style={{ textAlign: 'center' }}>
-        ReactJS Editable Table
-      </h1>
-      <div className="manual" style={{ textAlign: 'left' }}>
+    <div className="UserManual">
+      <h1 className="UserManual__title">Help</h1>
+      <div className="UserManual__content">
         <h2>User Manual</h2>
         <h2>Signup</h2>
         <p>
@@ -20,11 +18,10 @@ const Test = () => {
         <p>There are two versions of the table:</p>
         <ol>
           <li>
-            <strong>Lease Tab</strong>: This version uses modals for input.
+            <Link>Lease Tab</Link>: This version uses modals for input.
           </li>
           <li>
-            <strong>Employee Tab</strong>: This version uses dynamic input fields for user
-            interaction.
+            <Link>Employee Tab</Link>: This version uses dynamic input fields for user interaction.
           </li>
         </ol>
         <h2>Tax Overview</h2>
@@ -34,11 +31,66 @@ const Test = () => {
         </p>
         <h2>Navigation</h2>
         <p>
-          Use the navigation bar at the top of the page to move between different sections of the
-          application.
+          Use the navigation bar at your left to move between different sections of the application.
         </p>
+        <h2>Account Management</h2>
+        <p>
+          You can manage your account settings from the <Link to="/Home/Settings">account</Link>{' '}
+          page. Here, you can update your personal information, change your password, and manage
+          your email preferences.
+        </p>
+
+        <h2>Lease Management</h2>
+        <p>
+          The <Link to="/Home/lease">Lease</Link> page allows you to manage all leases. You can
+          view, add, update, and delete leases from this page.
+        </p>
+
+        <h2>Tax Overview</h2>
+        <p>
+          The <Link to="/Home/tax">Tax Overview</Link> page provides a comprehensive view of all
+          tax-related information. Please note that all user inputs are disabled on this page for
+          security reasons. Any changes to the tax information should be done at their original
+          places.
+        </p>
+
+        <h2>Employee/User Management</h2>
+        <p>
+          The <Link to="/Home/employee-user">Employee/User</Link> page allows you to manage all
+          employees and users. You can view, add, update, and delete employee/user information from
+          this page.
+        </p>
+
+        <h2>Building Management</h2>
+        <p>
+          The <Link to="/Home/building">Building</Link> page allows you to manage all buildings. You
+          can view, add, update, and delete building information from this page.
+        </p>
+
+        <h2>Floor Management</h2>
+        <p>
+          The <Link to="/Home/floor">Floor</Link> page allows you to manage all floors. You can
+          view, add, update, and delete floor information from this page.
+        </p>
+
+        <h2>Repair and Maintenance</h2>
+        <p>
+          The <Link to="/Home/repair-maintenance">Repair and Maintenance</Link> page allows you to
+          manage all repair and maintenance tasks. You can view, add, update, and delete repair and
+          maintenance information from this page.
+        </p>
+
+        <h2>Account Settings</h2>
+        <p>
+          You can manage your account settings from the <Link to="/Home/settings">Settings</Link>{' '}
+          page. Here, you can update your personal information, change your password, and manage
+          your email preferences.
+        </p>
+
         <h2>Support</h2>
         <p>If you encounter any issues or have any questions, please contact our support team.</p>
+        <h4>Email: anugenxoxo@gmail.com</h4>
+        <h4>Github: /anuvette</h4>
       </div>
     </div>
   )

@@ -1,7 +1,57 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import useAuth from './customHooks/useAuth'
 import './assets/Backup.css'
+import { motion } from 'framer-motion'
+import { toast } from 'react-toastify'
+
+function BackupCard({ title, onCardClick, setIsClicked, isClicked }) {
+  // State to track whether the card is clicked
+
+  // Function to handle card click
+  const handleCardClick = () => {
+    setIsClicked(!isClicked)
+    onCardClick()
+  }
+
+  return (
+    <div className="BackupCard" onClick={handleCardClick}>
+      <motion.div
+        className="BackupCard__header"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: isClicked ? 1 : 0 }}
+        transition={{ duration: 0.2, ease: 'easeInOut' }}
+      >
+        <motion.div
+          style={{
+            width: '90%',
+            aspectRatio: '1/1',
+            borderTop: '3px solid hsl(0, 100%, 100%)',
+            borderRight: '1px solid hsl(0, 90%, 100%)',
+            borderBottom: '3px solid hsl(0, 100%, 100%)',
+            borderRadius: '50%'
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 5, ease: 'linear', repeat: Infinity }}
+        />
+      </motion.div>
+
+      <div
+        style={{
+          backgroundColor: 'transparent',
+          color: 'white'
+        }}
+        className={`BackupCard__footer ${isClicked ? 'shrunk' : ''}`}
+      >
+        <div>
+          <h1 className="BackupCard__footer--h1">
+            {isClicked ? `${title}ing...` : `${title} Backup`}{' '}
+          </h1>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const Backup = () => {
   const {
@@ -15,6 +65,9 @@ const Backup = () => {
     setRoleInSession
   } = useAuth()
   const [successMessage, setSuccessMessage] = React.useState(null)
+  const [isImportClicked, setIsImportClicked] = useState(false)
+  const [isExportClicked, setIsExportClicked] = useState(false)
+
   const dialogRef = React.useRef(null)
 
   const exportMutation = useMutation({
@@ -29,6 +82,13 @@ const Backup = () => {
     onSuccess: (result) => {
       console.log('Export mutation is loading:', exportMutation.isPending)
       setSuccessMessage('Export successful')
+      setIsExportClicked(false) // Set isExportClicked to false when the mutation is successful
+      toast.success('Export successful!') // Display a success toast
+    },
+    onError: (error) => {
+      console.error('Error during export:', error)
+      setIsExportClicked(false) // Set isExportClicked to false when the mutation fails
+      toast.error('Error during export.') // Display an error toast
     }
   })
 
@@ -53,14 +113,7 @@ const Backup = () => {
 
   const handleCancelClick = () => {
     dialogRef.current.close()
-  }
-
-  const handleBackdropClick = () => {
-    dialogRef.current.close()
-  }
-
-  const handleDialogClick = (event) => {
-    event.stopPropagation()
+    setIsImportClicked(false)
   }
 
   const handleExportClick = async () => {
@@ -76,9 +129,11 @@ const Backup = () => {
         exportMutation.mutate(response.folderPath)
       } else {
         console.error('Error during export:', response.error)
+        setIsExportClicked(false)
       }
     } catch (error) {
       console.error('Error while invoking exportBackupFolder:', error)
+      setIsExportClicked(false) // Set isExportClicked to false no matter what
     }
   }
 
@@ -91,6 +146,12 @@ const Backup = () => {
           onClick={(event) => {
             if (event.target === dialogRef.current) {
               dialogRef.current.close()
+              setIsImportClicked(false)
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setIsImportClicked(false)
             }
           }}
         >
@@ -108,7 +169,20 @@ const Backup = () => {
         <p>Here you can backup your Database and Image Files.</p>
       </div>
       <div className="backup__actions">
-        <button className="backup__button" onClick={() => handleImportClick()}>
+        <BackupCard
+          title={'Import'}
+          onCardClick={handleImportClick}
+          setIsClicked={setIsImportClicked}
+          isClicked={isImportClicked}
+        />
+        <BackupCard
+          title={'Export'}
+          onCardClick={handleExportClick}
+          setIsClicked={setIsExportClicked}
+          isClicked={isExportClicked}
+        />
+
+        {/* <button className="backup__button" onClick={() => handleImportClick()}>
           Import Backup
         </button>
         <button
@@ -123,14 +197,7 @@ const Backup = () => {
           ) : (
             'Export Backup'
           )}
-        </button>
-      </div>
-      <div className="backup">
-        {successMessage && (
-          <h1 className="backup__success" style={{ color: 'white' }}>
-            {successMessage}!!!
-          </h1>
-        )}
+        </button> */}
       </div>
     </div>
   )

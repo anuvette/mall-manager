@@ -199,7 +199,7 @@ const MyRoutes = () => {
               </Route>
               <Route element={<RequireAuth allowedRole="all" />}>
                 <Route
-                  path="test"
+                  path="help"
                   element={
                     <motion.div {...motionProps}>
                       <Test />
