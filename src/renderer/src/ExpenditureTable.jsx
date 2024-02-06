@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useTable } from 'react-table'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import useAuth from './customHooks/useAuth'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const ExpenditureTable = () => {
   const { userId, usernameInSession, roleInSession, token } = useAuth() //not gonna use token or anything cuz i really dont think its important for a desktop app
@@ -141,10 +142,6 @@ const ExpenditureTable = () => {
   const total_expenditure_amount = useMemo(() => {
     return rows.reduce((sum, row) => sum + parseFloat(row.values.expenditure_amount), 0)
   }, [rows])
-
-  // useEffect(() => {
-  //     console.log("Selected Row:", selectedRow);
-  // }, [selectedRow]);
 
   if (getExpenditureQuery.isLoading) {
     return <div>Loading...</div>
@@ -409,30 +406,38 @@ const ExpenditureTable = () => {
               ))}
             </thead>
             <tbody {...getTableBodyProps()}>
-              {rows.map((row) => {
-                prepareRow(row)
-                return (
-                  <tr
-                    {...row.getRowProps()}
-                    style={
-                      selectedRow && selectedRow.expenditureId === row.original.expenditureId
-                        ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-                        : {}
-                    }
-                    onClick={() =>
-                      setSelectedRow(
+              <AnimatePresence>
+                {rows.map((row) => {
+                  prepareRow(row)
+                  return (
+                    <motion.tr
+                      initial={{ y: -30 }}
+                      animate={{
+                        y: 0,
+                        transition: { type: 'spring', stiffness: 200, damping: 10 }
+                      }}
+                      exit={{ opacity: 0, y: -30, transition: { type: 'tween', duration: 0.2 } }}
+                      {...row.getRowProps()}
+                      style={
                         selectedRow && selectedRow.expenditureId === row.original.expenditureId
-                          ? null
-                          : row.original
-                      )
-                    }
-                  >
-                    {row.cells.map((cell) => (
-                      <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                    ))}
-                  </tr>
-                )
-              })}
+                          ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                          : {}
+                      }
+                      onClick={() =>
+                        setSelectedRow(
+                          selectedRow && selectedRow.expenditureId === row.original.expenditureId
+                            ? null
+                            : row.original
+                        )
+                      }
+                    >
+                      {row.cells.map((cell) => (
+                        <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                      ))}
+                    </motion.tr>
+                  )
+                })}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>

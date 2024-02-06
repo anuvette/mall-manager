@@ -191,9 +191,9 @@ const Home = () => {
       <div className="content">
         {isHomePage && (
           <motion.div
-            initial={{ y: '-100vh' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100vh' }}
+            initial={{ x: '100vw' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100vw' }}
             transition={{ duration: 0.5 }}
             div
             className="last-visited"

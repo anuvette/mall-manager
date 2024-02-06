@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import './assets/EmployeeTable.css'
 import { useTable, useSortBy, useFilters } from 'react-table'
+import { motion, AnimatePresence } from 'framer-motion'
 
 function CustomCheckbox({ value, onChange }) {
   const [isChecked, setIsChecked] = useState(value === 1)
@@ -388,114 +389,119 @@ const EmployeeTable = ({ typeId, data, insertFunction, updateFunction, deleteFun
               </td>
             </tr>
           )}
-          {rows.map((row) => {
-            prepareRow(row)
-            return (
-              <tr
-                {...row.getRowProps()}
-                key={row.original[typeId]} // Add this line
-                style={
-                  activeRows.find((activeRow) => activeRow[typeId] === row.original[typeId])
-                    ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-                    : {}
-                }
-                onClick={(e) => {
-                  if (e.ctrlKey) {
-                    // If ctrl was pressed, add the row to the active rows
-                    setActiveRows((prevRows) => [...prevRows, row.original])
-                  } else {
-                    // If ctrl wasn't pressed, set the active row to just this row
-                    setActiveRows([row.original])
+          <AnimatePresence>
+            {rows.map((row) => {
+              prepareRow(row)
+              return (
+                <motion.tr
+                  initial={{ y: -30 }}
+                  animate={{ y: 0, transition: { type: 'spring', stiffness: 200, damping: 10 } }}
+                  exit={{ opacity: 0, y: -30, transition: { type: 'tween', duration: 0.2 } }}
+                  {...row.getRowProps()}
+                  key={row.original[typeId]}
+                  style={
+                    activeRows.find((activeRow) => activeRow[typeId] === row.original[typeId])
+                      ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                      : {}
                   }
-                }}
-                className="EmployeeTable__tableRow"
-              >
-                {row.cells.map((cell) => (
-                  <td
-                    onClick={() => {
-                      setEditingMode(true)
-                      setAddingMode(false)
-                    }}
-                    {...cell.getCellProps()}
-                    className="EmployeeTable__tableCell"
-                    style={{
-                      padding: editingMode ? '0px' : '10px',
-                      maxWidth: '100px',
-                      overflow: 'hidden',
-                      cursor: cell.column.id === 'password' ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    {editingMode && !['userid', 'sn', 'password'].includes(cell.column.id) ? (
-                      ['isAdmin', 'isSuperUser'].includes(cell.column.id) ? (
-                        <CustomCheckbox
-                          value={cell.value}
-                          onChange={(newValue) => {
-                            const newChanges = [...changes]
-                            const changeIndex = newChanges.findIndex(
-                              (change) => change.userid === row.original.userid
-                            )
-                            if (changeIndex !== -1) {
-                              newChanges[changeIndex] = {
-                                ...newChanges[changeIndex],
-                                [cell.column.id]: newValue
+                  onClick={(e) => {
+                    if (e.ctrlKey) {
+                      // If ctrl was pressed, add the row to the active rows
+                      setActiveRows((prevRows) => [...prevRows, row.original])
+                    } else {
+                      // If ctrl wasn't pressed, set the active row to just this row
+                      setActiveRows([row.original])
+                    }
+                  }}
+                  className="EmployeeTable__tableRow"
+                >
+                  {row.cells.map((cell) => (
+                    <motion.td
+                      onClick={() => {
+                        setEditingMode(true)
+                        setAddingMode(false)
+                      }}
+                      {...cell.getCellProps()}
+                      className="EmployeeTable__tableCell"
+                      style={{
+                        padding: editingMode ? '0px' : '10px',
+                        maxWidth: '100px',
+                        overflow: 'hidden',
+                        cursor: cell.column.id === 'password' ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {editingMode && !['userid', 'sn', 'password'].includes(cell.column.id) ? (
+                        ['isAdmin', 'isSuperUser'].includes(cell.column.id) ? (
+                          <CustomCheckbox
+                            value={cell.value}
+                            onChange={(newValue) => {
+                              const newChanges = [...changes]
+                              const changeIndex = newChanges.findIndex(
+                                (change) => change.userid === row.original.userid
+                              )
+                              if (changeIndex !== -1) {
+                                newChanges[changeIndex] = {
+                                  ...newChanges[changeIndex],
+                                  [cell.column.id]: newValue
+                                }
+                              } else {
+                                newChanges.push({
+                                  userid: row.original.userid,
+                                  [cell.column.id]: newValue
+                                })
                               }
-                            } else {
-                              newChanges.push({
-                                userid: row.original.userid,
-                                [cell.column.id]: newValue
-                              })
+                              setChanges(newChanges)
+                              console.log('Edit Changes fella', newChanges) // Log the changes to the console
+                            }}
+                          />
+                        ) : (
+                          <input
+                            style={{
+                              border: '1px solid white',
+                              borderRadius: 0,
+                              cursor: 'pointer'
+                            }}
+                            className="EmployeeTable__input--EditMode"
+                            type={
+                              ['contact', 'secondaryContact'].includes(cell.column.id)
+                                ? 'number'
+                                : 'text'
                             }
-                            setChanges(newChanges)
-                            console.log('Edit Changes fella', newChanges) // Log the changes to the console
-                          }}
-                        />
+                            defaultValue={cell.value}
+                            onChange={(e) => {
+                              const newChanges = [...changes]
+                              const changeIndex = newChanges.findIndex(
+                                (change) => change.userid === row.original.userid
+                              )
+                              if (changeIndex !== -1) {
+                                newChanges[changeIndex] = {
+                                  ...newChanges[changeIndex],
+                                  [cell.column.id]: e.target.value
+                                }
+                              } else {
+                                newChanges.push({
+                                  userid: row.original.userid,
+                                  [cell.column.id]: e.target.value
+                                })
+                              }
+                              setChanges(newChanges)
+                              console.log(newChanges) // Log the changes to the console
+                            }}
+                          />
+                        )
+                      ) : ['isAdmin', 'isSuperUser'].includes(cell.column.id) ? (
+                        <span style={{ color: cell.value === 1 ? '#14b8a6' : 'hsl(0, 100%, 50%)' }}>
+                          {cell.value === 1 ? 'Yes' : 'No'}
+                        </span>
                       ) : (
-                        <input
-                          style={{
-                            border: '1px solid white',
-                            borderRadius: 0,
-                            cursor: 'pointer'
-                          }}
-                          className="EmployeeTable__input--EditMode"
-                          type={
-                            ['contact', 'secondaryContact'].includes(cell.column.id)
-                              ? 'number'
-                              : 'text'
-                          }
-                          defaultValue={cell.value}
-                          onChange={(e) => {
-                            const newChanges = [...changes]
-                            const changeIndex = newChanges.findIndex(
-                              (change) => change.userid === row.original.userid
-                            )
-                            if (changeIndex !== -1) {
-                              newChanges[changeIndex] = {
-                                ...newChanges[changeIndex],
-                                [cell.column.id]: e.target.value
-                              }
-                            } else {
-                              newChanges.push({
-                                userid: row.original.userid,
-                                [cell.column.id]: e.target.value
-                              })
-                            }
-                            setChanges(newChanges)
-                            console.log(newChanges) // Log the changes to the console
-                          }}
-                        />
-                      )
-                    ) : ['isAdmin', 'isSuperUser'].includes(cell.column.id) ? (
-                      <span style={{ color: cell.value === 1 ? '#14b8a6' : 'hsl(0, 100%, 50%)' }}>
-                        {cell.value === 1 ? 'Yes' : 'No'}
-                      </span>
-                    ) : (
-                      cell.render('Cell')
-                    )}
-                  </td>
-                ))}
-              </tr>
-            )
-          })}
+                        cell.render('Cell')
+                      )}
+                    </motion.td>
+                  ))}
+                </motion.tr>
+              )
+            })}
+          </AnimatePresence>
         </tbody>
       </table>
     </div>

@@ -23,9 +23,9 @@ import { useLocation, Routes, Route } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const motionProps = {
-  initial: { y: '-100vh' },
-  animate: { y: 0 },
-  exit: { y: '100vh' },
+  initial: { x: '100vw' },
+  animate: { x: 0 },
+  exit: { x: '-100vw' },
   transition: { duration: 0.5 },
   style: { height: '100%', width: '100%' }
 }

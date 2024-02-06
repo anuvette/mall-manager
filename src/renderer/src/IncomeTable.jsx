@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useTable, useSortBy } from 'react-table'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import useAuth from './customHooks/useAuth'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const IncomeTable = () => {
   const { userId, usernameInSession, roleInSession, token } = useAuth() //not gonna use token or anything cuz i really dont think its important for a desktop app
@@ -404,32 +405,40 @@ const IncomeTable = () => {
                 ))}
               </thead>
               <tbody {...getTableBodyProps()}>
-                {rows.map((row) => {
-                  prepareRow(row)
-                  return (
-                    <tr
-                      {...row.getRowProps()}
-                      style={
-                        selectedRow && selectedRow.incomeId === row.original.incomeId
-                          ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-                          : {}
-                      }
-                      onClick={() =>
-                        setSelectedRow(
+                <AnimatePresence>
+                  {rows.map((row) => {
+                    prepareRow(row)
+                    return (
+                      <motion.tr
+                        initial={{ y: -30 }}
+                        animate={{
+                          y: 0,
+                          transition: { type: 'spring', stiffness: 200, damping: 10 }
+                        }}
+                        exit={{ opacity: 0, y: -30, transition: { type: 'tween', duration: 0.2 } }}
+                        {...row.getRowProps()}
+                        style={
                           selectedRow && selectedRow.incomeId === row.original.incomeId
-                            ? null
-                            : row.original
-                        )
-                      }
-                    >
-                      {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()}>
-                          {cell.render('Cell', { onInputChange: handleInputChange })}
-                        </td>
-                      ))}
-                    </tr>
-                  )
-                })}
+                            ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                            : {}
+                        }
+                        onClick={() =>
+                          setSelectedRow(
+                            selectedRow && selectedRow.incomeId === row.original.incomeId
+                              ? null
+                              : row.original
+                          )
+                        }
+                      >
+                        {row.cells.map((cell) => (
+                          <td {...cell.getCellProps()}>
+                            {cell.render('Cell', { onInputChange: handleInputChange })}
+                          </td>
+                        ))}
+                      </motion.tr>
+                    )
+                  })}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>

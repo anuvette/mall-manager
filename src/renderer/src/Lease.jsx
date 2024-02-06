@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
+import { AnimatePresence, motion } from 'framer-motion'
 
 function Lease() {
   const [selectedRow, setSelectedRow] = useState(null)
@@ -740,30 +741,35 @@ function Lease() {
             ))}
           </thead>
           <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row)
-              return (
-                <tr
-                  {...row.getRowProps()}
-                  style={
-                    selectedRow && selectedRow.leaseId === row.original.leaseId
-                      ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-                      : {}
-                  }
-                  onClick={() =>
-                    setSelectedRow(
+            <AnimatePresence>
+              {rows.map((row) => {
+                prepareRow(row)
+                return (
+                  <motion.tr
+                    initial={{ y: -30 }}
+                    animate={{ y: 0, transition: { type: 'spring', stiffness: 200, damping: 10 } }}
+                    exit={{ opacity: 0, y: -30, transition: { type: 'tween', duration: 0.2 } }}
+                    {...row.getRowProps()}
+                    style={
                       selectedRow && selectedRow.leaseId === row.original.leaseId
-                        ? null
-                        : row.original
-                    )
-                  }
-                >
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()}> {cell.render('Cell')} </td>
-                  ))}
-                </tr>
-              )
-            })}
+                        ? { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                        : {}
+                    }
+                    onClick={() =>
+                      setSelectedRow(
+                        selectedRow && selectedRow.leaseId === row.original.leaseId
+                          ? null
+                          : row.original
+                      )
+                    }
+                  >
+                    {row.cells.map((cell) => (
+                      <td {...cell.getCellProps()}> {cell.render('Cell')} </td>
+                    ))}
+                  </motion.tr>
+                )
+              })}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

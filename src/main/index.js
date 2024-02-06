@@ -77,7 +77,7 @@ function pdfProcessor(leaseDetails, ownerFullName) {
     .font('Helvetica-Bold')
     .text(`${diffInMonths}`, { continued: true })
     .font('Helvetica')
-    .text(' months , commencing on ', { continued: true })
+    .text(' months, commencing on ', { continued: true })
     .font('Helvetica-Bold')
     .text(`${leaseDetails.dateOfEffect}`, { continued: true })
     .font('Helvetica')
