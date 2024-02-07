@@ -1,54 +1,42 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import './assets/Floor.css';
-import AddNewFloorButton from './AddNewFloorButton';
-import SpaceComponent from './Space-Component';
-import useAuth from './customHooks/useAuth';
-
-
-
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import './assets/Floor.css'
+import AddNewFloorButton from './AddNewFloorButton'
+import SpaceComponent from './Space-Component'
+import useAuth from './customHooks/useAuth'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const Floor = () => {
-
-  const [activeFloor, setActiveFloor] = useState('1');
-  const {usernameInSession, roleInSession, token} = useAuth();
-
+  const [activeFloor, setActiveFloor] = useState('1')
+  const { usernameInSession, roleInSession, token } = useAuth()
 
   const floorQuery = useQuery({
     queryKey: ['floorData'],
-    queryFn: () => window.electronAPI.getFloorDetails(),
+    queryFn: () => window.electronAPI.getFloorDetails()
     // refetchOnWindowFocus: false,
-  });
-
-
- 
-
+  })
 
   const handleFloorChange = (event) => {
-
-    const floorNumber = event.target.id.replace('Floor', '');
-    setActiveFloor(floorNumber);
-
-  };
-
-  
+    const floorNumber = event.target.id.replace('Floor', '')
+    setActiveFloor(floorNumber)
+  }
 
   if (floorQuery.isLoading) {
     return (
       <div className="Dashboard" style={{}}>
         <h1>Floors & Spaces</h1>
-        <span style={{ color: "gray" }}>Loading...</span>
+        <span style={{ color: 'gray' }}>Loading...</span>
       </div>
-    );
+    )
   }
 
   if (floorQuery.isError) {
     return (
       <div className="Dashboard" style={{}}>
         <h1>Floors & Spaces</h1>
-        <span style={{ color: "red" }}>Unexpected Error Occured!</span>
+        <span style={{ color: 'red' }}>Unexpected Error Occured!</span>
       </div>
-    );
+    )
   }
 
   // const { token } = useContext(AuthContext);
@@ -63,57 +51,58 @@ const Floor = () => {
     <div className="Dashboard">
       <h1>Floors & Spaces</h1>
 
-      <div className='Floors'>
-         
-        <div className='mother-container'>
-        <div className="input-container">
-          <input id="Floor1" type="radio" name="Floor" onClick={handleFloorChange} defaultChecked/>
+      <div className="Floors">
+        <div className="mother-container">
+          <div className="input-container">
+            <input
+              id="Floor1"
+              type="radio"
+              name="Floor"
+              onClick={handleFloorChange}
+              defaultChecked
+            />
             <label htmlFor="Floor1">Floor 1</label>
-        </div>
+          </div>
         </div>
 
         <div className="mother-container">
-        <div className="input-container">
-          <input id="Floor2" type="radio" name="Floor" onClick={handleFloorChange}/>
+          <div className="input-container">
+            <input id="Floor2" type="radio" name="Floor" onClick={handleFloorChange} />
             <label htmlFor="Floor2">Floor 2</label>
-        </div>
+          </div>
         </div>
 
         <div className="mother-container">
-        <div className="input-container">
-          <input id="Floor3" type="radio" name="Floor" onClick={handleFloorChange}/>
+          <div className="input-container">
+            <input id="Floor3" type="radio" name="Floor" onClick={handleFloorChange} />
             <label htmlFor="Floor3">Floor 3</label>
-        </div>
+          </div>
         </div>
 
         <div className="mother-container">
-        <div className="input-container">
-          <input id="Floor4" type="radio" name="Floor" onClick={handleFloorChange}/>
+          <div className="input-container">
+            <input id="Floor4" type="radio" name="Floor" onClick={handleFloorChange} />
             <label htmlFor="Floor4">Floor 4</label>
+          </div>
         </div>
-        </div>
-      
       </div>
 
       <div className="Spaces">
-       
-        <AddNewFloorButton activeFloor={activeFloor}/>
+        <AddNewFloorButton activeFloor={activeFloor} />
 
-
-        {floorQuery.data
-        .filter((spaceItem) => spaceItem.floorNumber == activeFloor)
-        .sort((a, b) => a.spaceNumber - b.spaceNumber) // Sort by the 'spaceNumber' attribute
-        .map((spaceItem) => (
-          <SpaceComponent
-            key={spaceItem.spaceId}
-            spaceItem={spaceItem}
-          />
-        ))}
-
-
+        <AnimatePresence>
+          {floorQuery.data
+            .filter((spaceItem) => spaceItem.floorNumber == activeFloor)
+            .sort((a, b) => a.spaceNumber - b.spaceNumber)
+            .map((spaceItem) => (
+              <motion.div key={spaceItem.spaceId} layout exit={{ opacity: 0, x: '-100%' }}>
+                <SpaceComponent spaceItem={spaceItem} />
+              </motion.div>
+            ))}
+        </AnimatePresence>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Floor;
+export default Floor
