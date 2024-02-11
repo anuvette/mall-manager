@@ -176,16 +176,7 @@ const Home = () => {
               Error! Something Happened..
             </p>
           )}
-          <button
-            style={{
-              border: '2px solid white',
-              color: 'white',
-              backgroundColor: 'transparent'
-            }}
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       </div>
       <div className="content">

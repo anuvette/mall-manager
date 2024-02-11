@@ -131,4 +131,26 @@
 
 .logout button {
   width: 100%;
+  border: 2px solid white;
+  color: white;
+  background-color: transparent;
+  transition:
+    color 0.3s,
+    border-color 0.3s;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    color: rgba(255, 255, 255, 1);
+    border-color: rgba(255, 255, 255, 1);
+  }
+
+  50% {
+    color: rgba(255, 0, 0, 1);
+    border-color: rgba(255, 0, 0, 1);
+  }
+}
+
+.logout button:hover {
+  animation: breathe 2s infinite;
 }

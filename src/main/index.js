@@ -135,7 +135,6 @@ function pdfProcessor(leaseDetails, ownerFullName) {
     )
     .text(' in writing of any needed repairs or maintenance.')
     .moveDown()
-  //untested
   doc
     .fontSize(12)
     .font('Helvetica-Bold')
@@ -176,7 +175,7 @@ function pdfProcessor(leaseDetails, ownerFullName) {
   doc
     .font('Helvetica')
     .text('LANDLORD', { continued: true })
-    .text(' '.repeat(100), { continued: true }) // 50 spaces for justification
+    .text(' '.repeat(100), { continued: true }) // 100 spaces for justification
     .text('TENANT')
     .moveDown()
 
@@ -228,6 +227,27 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  mainWindow.on('close', (e) => {
+    e.preventDefault() // Prevents the window from closing
+
+    dialog
+      .showMessageBox({
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message:
+          'You are about to quit the Mall Manager application. Are you sure you want to proceed?'
+      })
+      .then((result) => {
+        if (result.response === 0) {
+          // Runs the following if 'Yes' is clicked
+          mainWindow = null
+          app.exit()
+        }
+      })
+      .catch((err) => console.log(err))
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -338,6 +358,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
   const photosDir = path.join(app.getPath('userData'), 'photos')
 
   if (!fs.existsSync(photosDir)) {
